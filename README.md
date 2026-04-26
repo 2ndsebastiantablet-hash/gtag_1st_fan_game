@@ -15,10 +15,21 @@ The scene keeps the simple A-Frame/WebXR structure from `simple-vr-scene`, inclu
 
 ## Files
 
-- `index.html` sets up the A-Frame scene, Quest tracked controllers, colliders, lighting, and debug panel.
+- `index.html` sets up the A-Frame scene, Quest tracked controllers, lighting, and the map root.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component.
+- `map.js` builds the water park resort map with lightweight A-Frame geometry.
 - `main.js` updates the small browser note when entering or exiting VR.
 - `.nojekyll` keeps GitHub Pages from applying Jekyll processing.
+
+## Map Areas
+
+- Main hotel with lobby, front counter, rooms, hallways, balconies, ledges, and rooftop access.
+- Indoor bar/lounge, locker rooms, changing rooms, and fast connector corridors.
+- Outdoor pool deck with shallow, deep, and quiet pools plus a poolside bar.
+- Lazy river loop with pushable edges, bridge shortcut, and center island.
+- Slide tower with straight, tube, and spiral slide routes.
+- Rooftop parkour route with vents, beams, sky bridge, and shortcuts to the slide tower.
+- Hidden waterfall tunnel, service corridor, and secret maintenance room.
 
 ## Hosting
 
