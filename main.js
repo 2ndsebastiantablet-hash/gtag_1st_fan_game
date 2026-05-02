@@ -14,6 +14,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const menuRoot = document.getElementById("vr-menu-root");
   const menuEnvironment = document.getElementById("menu-environment");
   const mapRoot = document.getElementById("storm-plain-map");
+  const worldDebugText = document.getElementById("world-debug-text");
   const remoteRoot = document.getElementById("remote-players");
   const rig = document.getElementById("player-rig");
   const camera = document.getElementById("player-camera");
@@ -36,6 +37,7 @@ window.addEventListener("DOMContentLoaded", () => {
     status: "Choose Play in VR.",
     joined: false,
     playing: false,
+    lastSpawn: { x: 0, y: 0.35, z: 18, terrainY: 0, ready: false },
     snapshot: null
   };
 
@@ -79,8 +81,11 @@ window.addEventListener("DOMContentLoaded", () => {
     multiplayer.pushState(getLocalPlayerState(), PLAYER_COLORS);
   }, 90);
 
+  setInterval(updateWorldDebug, 250);
+
   renderMenu();
   showMenuSpace();
+  updateWorldDebug();
 
   function resolveApiBase() {
     if (window.QUIET_MULTIPLAYER_API) {
@@ -313,6 +318,7 @@ window.addEventListener("DOMContentLoaded", () => {
     resetRigToGameSpawnWhenReady();
     note.textContent = message || "In game.";
     renderMenu();
+    updateWorldDebug();
   }
 
   function showMenuSpace() {
@@ -324,6 +330,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (sky) {
       sky.setAttribute("color", "#FFFFFF");
     }
+    updateWorldDebug();
   }
 
   function resetRigToGameSpawnWhenReady(attempt = 0) {
@@ -336,11 +343,34 @@ window.addEventListener("DOMContentLoaded", () => {
     const z = 18;
     const terrainY = window.getTerrainHeightAt ? window.getTerrainHeightAt(x, z) : 0;
     rig.object3D.position.set(x, terrainY + 0.35, z);
+    state.lastSpawn = { x, y: terrainY + 0.35, z, terrainY, ready: Boolean(window.getTerrainHeightAt) };
     const locomotion = rig.components && rig.components["gorilla-locomotion"];
     if (locomotion) {
       locomotion.velocity.set(0, 0, 0);
       locomotion.resetTracking();
     }
+    updateWorldDebug();
+  }
+
+  function updateWorldDebug() {
+    if (!worldDebugText) return;
+
+    const mapVisible = mapRoot.getAttribute("visible") !== false;
+    const mapLoaded = mapRoot.children.length > 0 && Boolean(window.getTerrainHeightAt);
+    const rigPos = rig.object3D.position;
+    const spawn = state.lastSpawn;
+    const currentTerrain = window.getTerrainHeightAt ? window.getTerrainHeightAt(rigPos.x, rigPos.z) : 0;
+
+    worldDebugText.setAttribute("value", [
+      "state: " + state.screen + (state.playing ? " / game" : " / menu"),
+      "map visible: " + mapVisible,
+      "map loaded: " + mapLoaded + " children=" + mapRoot.children.length,
+      "rig: " + fmt(rigPos.x) + ", " + fmt(rigPos.y) + ", " + fmt(rigPos.z),
+      "spawn: " + fmt(spawn.x) + ", " + fmt(spawn.y) + ", " + fmt(spawn.z),
+      "spawn terrain: " + fmt(spawn.terrainY) + " ready=" + spawn.ready,
+      "terrain here: " + fmt(currentTerrain),
+      "place: " + (state.playing ? "game map" : "menu room")
+    ].join("\n"));
   }
 
   function updateLobbyStatus(snapshot) {
@@ -483,5 +513,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   function round(value) {
     return Math.round(Number(value || 0) * 1000) / 1000;
+  }
+
+  function fmt(value) {
+    return Number(value || 0).toFixed(2);
   }
 });
