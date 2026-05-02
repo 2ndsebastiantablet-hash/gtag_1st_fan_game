@@ -10,15 +10,21 @@ This project is adapted from the pinned template repo requested for the game:
 - commit: `28a426aa6ade789320e2202cfa8d2fe61b46b539`
 - scene template: `templates/simple-vr-scene`
 - movement template: `templates/gorilla-tag-locomotion`
+- multiplayer template repo: `2ndsebastiantablet-hash/fly-game`
+- multiplayer template commit: `389610aa69a18eb56eadb228520a5f4dfd33109d`
+- multiplayer template folder: `multiplayer-template`
 
 The scene keeps the simple A-Frame/WebXR structure from `simple-vr-scene`, including the normal A-Frame `Enter VR` button. The movement system is based on `gorilla-tag-locomotion` and preserves hand pushing, bounce/launch behavior, gravity, drag, and Quest controller tracking.
+The multiplayer backend and browser client are adapted from the pinned `multiplayer-template`, using private lobby codes, WebSockets, Durable Objects, and compact VR player state.
 
 ## Files
 
-- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the map root, terrain-relative spawn, stronger gravity, extra high ground drag, and a temporary terrain debug readout.
+- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the VR menu root, multiplayer remotes root, terrain-relative spawn, faster movement tuning, lighter gravity, and a temporary terrain debug readout.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component with terrain-height support for the rig and hands.
-- `map.js` builds the generated storm plain map, smooth terrain visual mesh, raycast terrain collision surface, rain, lightning, sky trees, dense forest trees, and heavy reactive grass.
-- `main.js` updates the small browser note when entering or exiting VR.
+- `map.js` builds the generated storm plain map, smooth terrain visual mesh, raycast terrain collision surface, rain, lightning, sky trees, denser forest trees, and heavier reactive grass.
+- `main.js` builds the VR-first `quiet` menu, starts single player, creates and joins private multiplayer codes, sends local VR state, and renders remote players.
+- `frontend/multiplayer-client.js` is the template browser client used by the VR menu.
+- `backend/` contains the template Cloudflare Worker, lobby directory, Durable Object room, and server authority adapted for VR rig/head/hand state.
 - `.nojekyll` keeps GitHub Pages from applying Jekyll processing.
 
 ## Map
@@ -30,8 +36,8 @@ Map features:
 - Randomly generated rolling grassy terrain with hills instead of a flat floor, using a smooth grass mesh that is also registered as the terrain raycast collision surface.
 - Heavy rain that follows the player so the storm stays dense across the whole map.
 - Occasional lightning flashes with visible strikes and a dark gray storm sky.
-- Dense triangular grass blades of varied height spread across the whole map, bending away from the player rig and tracked hands.
-- A fuller forest of climbable trees, plus tall sky trees with trunks, branches, and hand nubs.
+- Denser triangular grass blades of varied height spread across the whole map, bending away from the player rig and tracked hands.
+- A much fuller forest of climbable trees, plus tall sky trees with trunks, branches, and hand nubs.
 - Open grassy hills and tree routes for Gorilla Tag-style movement.
 - No cloud geometry, brown mud patches, puddles, imported models, visible boundary walls, rectangular grass clump blocks, visible terrain tile blocks, or leftover structure blocks.
 - Terrain height is sampled with downward raycasts against the actual ground mesh, while solid `locomotion-collider` boxes remain for tree trunks, tree branches, boundaries, and other non-terrain traversal surfaces.
@@ -40,13 +46,14 @@ Map features:
 
 ## Hosting
 
-This is a static website. No npm install, framework, bundler, or build step is required.
+The frontend is static A-Frame. Multiplayer hosting uses the adapted Cloudflare Worker template in `backend/` and `wrangler.toml`; no frontend framework, bundler, imported models, or GLB files are required.
 
 To test on Meta Quest:
 
-1. Host the files over HTTPS.
+1. Host the files over HTTPS, or deploy with `npm run deploy` for the Worker/API plus static assets.
 2. Open the hosted URL in Meta Quest Browser.
 3. Press `Enter VR`.
-4. Push your tracked hands against the ground, hills, tree trunks, branches, and climb nubs to move.
+4. Use the `quiet` VR menu to choose single player or create/join a private multiplayer code.
+5. Push your tracked hands against the ground, hills, tree trunks, branches, and climb nubs to move.
 
 WebXR requires HTTPS on real devices, so use GitHub Pages or another HTTPS static host for Quest testing.
