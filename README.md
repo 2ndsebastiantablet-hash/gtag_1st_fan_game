@@ -15,22 +15,25 @@ The scene keeps the simple A-Frame/WebXR structure from `simple-vr-scene`, inclu
 
 ## Files
 
-- `index.html` sets up the A-Frame scene, Quest tracked controllers, lighting, and the map root.
+- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, and the map root.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component.
-- `map.js` builds the rainforest map with lightweight A-Frame primitives.
+- `map.js` builds the generated storm plain map, terrain colliders, rain, lightning, clouds, and reactive grass.
 - `main.js` updates the small browser note when entering or exiting VR.
 - `.nojekyll` keeps GitHub Pages from applying Jekyll processing.
 
-## Map Areas
+## Map
 
-- Dense rainforest floor with muddy loop paths, open clearings, tall grass, bushes, flowers, and climbable border cliffs.
-- Huge trees in different sizes with climbable trunks, buttress roots, hand knots, wraparound tree platforms, and canopy leaf clusters.
-- Canopy routes with rope bridges, narrow skilled beams, high platforms, vines, and parkour pads above the ground.
-- Cave routes on the west and east sides with climb shelves, tunnel exits, and hidden traversal options.
-- Water features built from simple primitives: small ponds, a stream crossing, stepping stones, and a waterfall basin.
-- Ground traversal loops with fallen logs, root climbs, a fast vine corridor, launch stumps, rocks, and boulders.
-- Secret paths include a waterfall tunnel, hollow tree room, root tunnel, cliff-top shortcut, and high canopy shortcut.
-- Built only from A-Frame primitives and simple colored materials; no GLB, glTF, external model, or asset map is used.
+The current map is a generated stormy grass plain built from lightweight A-Frame primitives and small runtime Three.js meshes inside A-Frame components. It does not use imported models, GLB files, external engines, or large textures.
+
+Map features:
+
+- Randomly generated rolling grassy terrain with hills instead of a flat floor.
+- Heavy rain that follows the player so the storm stays dense across the whole map.
+- Occasional lightning flashes with visible strikes and a dark gray storm sky.
+- Low clouds spread across the map.
+- Grass blades of varied height that bend away from the player rig and tracked hands.
+- Muddy paths, puddles, wet boulders, climbable ridges, launch stones, and a lookout slab for Gorilla Tag-style movement.
+- Solid `locomotion-collider` boxes for terrain tiles, rocks, ridges, boundaries, paths, and other major traversal surfaces.
 
 ## Hosting
 
@@ -41,6 +44,6 @@ To test on Meta Quest:
 1. Host the files over HTTPS.
 2. Open the hosted URL in Meta Quest Browser.
 3. Press `Enter VR`.
-4. Push your tracked hands against the floor, trees, rocks, platforms, bridges, logs, or tunnel walls to move.
+4. Push your tracked hands against the ground, hills, rocks, ridges, and ledges to move.
 
 WebXR requires HTTPS on real devices, so use GitHub Pages or another HTTPS static host for Quest testing.

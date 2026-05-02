@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GTag 1st Fan Game - Rainforest</title>
+  <title>GTag 1st Fan Game - Storm Plain</title>
 
   <!-- A-Frame includes WebXR support and automatically shows the Enter VR button. -->
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
@@ -36,20 +36,19 @@
 </head>
 <body>
   <div id="note">
-    Open this page in Meta Quest Browser, press Enter VR, and explore the rainforest with hand movement.
+    Open this page in Meta Quest Browser, press Enter VR, and move through the stormy grass hills with your hands.
   </div>
 
   <a-scene
     renderer="antialias: true; colorManagement: true"
     vr-mode-ui="enabled: true"
-    background="color: #BEEBFF"
+    background="color: #171A20"
   >
-    <a-entity light="type: ambient; intensity: 0.7"></a-entity>
-    <a-entity light="type: directional; intensity: 1.0" position="8 12 5"></a-entity>
-    <a-entity light="type: point; intensity: 0.8; distance: 18" position="-8 3 10"></a-entity>
-    <a-entity light="type: point; intensity: 0.55; distance: 16" position="-15 3 -2"></a-entity>
+    <a-entity light="type: ambient; intensity: 0.28; color: #8D96A0"></a-entity>
+    <a-entity light="type: directional; intensity: 0.25; color: #87909B" position="-6 12 -4"></a-entity>
+    <a-entity light="type: point; intensity: 0.25; distance: 22; color: #8FA7B8" position="-8 4 10"></a-entity>
 
-    <a-sky color="#BEEBFF"></a-sky>
+    <a-sky color="#171A20"></a-sky>
 
     <a-entity
       id="player-rig"
@@ -68,7 +67,7 @@
       </a-entity>
     </a-entity>
 
-    <a-entity id="rainforest-map"></a-entity>
+    <a-entity id="storm-plain-map"></a-entity>
   </a-scene>
 </body>
 </html>
