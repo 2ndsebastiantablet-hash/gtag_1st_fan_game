@@ -15,9 +15,9 @@ The scene keeps the simple A-Frame/WebXR structure from `simple-vr-scene`, inclu
 
 ## Files
 
-- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the map root, and grippier scene-level locomotion settings.
+- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the map root, higher spawn, stronger gravity, and non-slippery scene-level locomotion settings.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component.
-- `map.js` builds the generated storm plain map, terrain colliders, rain, lightning, clouds, and dense reactive grass.
+- `map.js` builds the generated storm plain map, terrain colliders, rain, lightning, tall trees, and dense reactive grass.
 - `main.js` updates the small browser note when entering or exiting VR.
 - `.nojekyll` keeps GitHub Pages from applying Jekyll processing.
 
@@ -30,11 +30,11 @@ Map features:
 - Randomly generated rolling grassy terrain with hills instead of a flat floor.
 - Heavy rain that follows the player so the storm stays dense across the whole map.
 - Occasional lightning flashes with visible strikes and a dark gray storm sky.
-- Low clouds spread across the map.
 - Dense grass blades and clumps of varied height spread across the whole map, bending away from the player rig and tracked hands.
-- Wet green paths, mossy climbable ridges, grassy launch mounds, and a lookout mound for Gorilla Tag-style movement.
-- No brown mud patches, puddles, imported models, or visible boundary walls.
-- Solid `locomotion-collider` boxes for terrain tiles, rocks, ridges, boundaries, paths, and other major traversal surfaces.
+- Tall climbable trees reach toward the sky with trunks, branches, and hand nubs.
+- Wet green paths and open grassy hills for Gorilla Tag-style movement.
+- No cloud geometry, brown mud patches, puddles, imported models, visible boundary walls, or leftover structure blocks.
+- Solid `locomotion-collider` boxes for terrain tiles, tree trunks, tree branches, boundaries, paths, and other major traversal surfaces.
 
 ## Hosting
 
@@ -45,6 +45,6 @@ To test on Meta Quest:
 1. Host the files over HTTPS.
 2. Open the hosted URL in Meta Quest Browser.
 3. Press `Enter VR`.
-4. Push your tracked hands against the ground, hills, rocks, ridges, and ledges to move.
+4. Push your tracked hands against the ground, hills, tree trunks, branches, and climb nubs to move.
 
 WebXR requires HTTPS on real devices, so use GitHub Pages or another HTTPS static host for Quest testing.

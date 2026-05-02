@@ -11,8 +11,8 @@
     wetGrass: "#2F6332",
     moss: "#4E8B3D",
     mossLight: "#6DAF4E",
-    cloud: "#4B515A",
-    cloudLight: "#69717D",
+    bark: "#5B3A24",
+    barkDark: "#3A2518",
     rain: "#A8CFE8",
     lightning: "#EAF6FF"
   };
@@ -45,9 +45,9 @@
     });
 
     buildTerrain(root);
-    buildTraversal(root);
     buildGrass(root);
-    buildStormSky(root);
+    buildSkyTrees(root);
+    buildStormEffects(root);
     entity(root, "a-entity", {
       id: "lightning-system",
       "lightning-storm": ""
@@ -82,46 +82,6 @@
     });
   }
 
-  function buildTraversal(root) {
-    const ridges = [
-      [-35, -28, 6, 3.3, 8, 5],
-      [-29, -22, 6, 4.2, 8, 5],
-      [-23, -16, 6, 5.0, 8, 5],
-      [26, -24, 7, 3.4, 8, 5],
-      [31, -15, 7, 4.4, 8, 5],
-      [34, -6, 7, 5.2, 8, 5],
-      [-22, 24, 7, 3.5, 8, 5],
-      [-15, 30, 7, 4.7, 8, 5],
-      [-8, 35, 7, 5.7, 8, 5]
-    ];
-
-    ridges.forEach(function (r, i) {
-      const top = terrainHeight(r[0], r[1]) + r[3] * 0.5;
-      box(root, "grass covered climb ridge", [r[0], top, r[1]], [r[2], r[3], r[4]], i % 2 ? C.mossLight : C.moss);
-    });
-
-    for (let i = 0; i < 18; i += 1) {
-      const x = -38 + i * 4.4;
-      const z = 38 - Math.abs(i - 9) * 1.8;
-      const y = terrainHeight(x, z) + 0.45 + (i % 3) * 0.18;
-      box(root, "grass launch mound", [x, y, z], [3.5, 0.9, 3], i % 2 ? C.grass : C.mossLight);
-    }
-
-    for (let i = 0; i < 12; i += 1) {
-      const x = 35 - i * 5.5;
-      const z = -36 + Math.sin(i) * 6;
-      const y = terrainHeight(x, z) + 0.55;
-      box(root, "mossy shortcut mound", [x, y, z], [3.2, 1.1 + (i % 4) * 0.4, 2.8], i % 2 ? C.mossLight : C.moss);
-    }
-
-    box(root, "grassy lookout mound", [0, terrainHeight(0, -34) + 3.2, -34], [18, 1, 9], C.moss);
-    box(root, "grassy lookout climb face", [0, terrainHeight(0, -29) + 2.1, -29], [17, 4.2, 1.2], C.mossLight);
-
-    for (let i = 0; i < 7; i += 1) {
-      box(root, "lookout grass hand ledge", [-7.5 + i * 2.5, terrainHeight(0, -29) + 0.9 + i * 0.42, -28.2], [1.7, 0.34, 1.2], C.moss);
-    }
-  }
-
   function buildGrass(root) {
     entity(root, "a-entity", {
       id: "reactive-grass",
@@ -135,23 +95,19 @@
     }
   }
 
-  function buildStormSky(root) {
-    for (let i = 0; i < 34; i += 1) {
-      const p = randomPoint(i * 19 + 31, HALF + 12);
-      const y = 19 + (i % 5) * 1.2;
-      const scale = [8 + (i % 4) * 2, 1.6 + (i % 3) * 0.4, 5 + (i % 5)];
+  function buildSkyTrees(root) {
+    const trees = [
+      [-39, -37, 1.6, 30], [-27, -31, 1.35, 26], [-13, -39, 1.55, 31], [7, -35, 1.4, 28], [28, -36, 1.7, 32],
+      [-42, -13, 1.45, 27], [-30, 3, 1.8, 34], [-13, -9, 1.25, 25], [17, -12, 1.6, 30], [38, -10, 1.4, 27],
+      [-37, 22, 1.55, 31], [-21, 35, 1.35, 26], [-3, 29, 1.75, 33], [16, 33, 1.45, 29], [36, 23, 1.65, 32]
+    ];
 
-      entity(root, "a-sphere", {
-        "data-name": "dark storm cloud",
-        position: vector([p[0], y, p[1]]),
-        scale: vector(scale),
-        color: i % 3 ? C.cloud : C.cloudLight,
-        opacity: "0.9",
-        segmentsWidth: "12",
-        segmentsHeight: "6"
-      });
-    }
+    trees.forEach(function (t, i) {
+      tallTree(root, t[0], t[1], t[2], t[3], i);
+    });
+  }
 
+  function buildStormEffects(root) {
     entity(root, "a-light", {
       id: "storm-flash",
       type: "point",
@@ -163,6 +119,21 @@
 
     box(root, "visible lightning bolt", [0, 12, 0], [0.28, 18, 0.28], C.lightning, false).setAttribute("id", "lightning-bolt");
     document.getElementById("lightning-bolt").setAttribute("visible", "false");
+  }
+
+  function tallTree(root, x, z, radius, height, index) {
+    const baseY = terrainHeight(x, z);
+    cylinder(root, "sky tree trunk", [x, baseY + height / 2, z], radius, height, index % 2 ? C.bark : C.barkDark);
+
+    for (let i = 0; i < 8; i += 1) {
+      const side = i % 2 ? -1 : 1;
+      box(root, "sky tree climb nub", [x + side * radius * 0.78, baseY + 2.2 + i * 2.25, z + radius * 0.82], [radius * 1.25, 0.34, 0.72], C.bark);
+    }
+
+    box(root, "sky tree high branch", [x + radius * 2.2, baseY + height * 0.62, z], [radius * 4.2, 0.48, 0.6], C.bark);
+    box(root, "sky tree high branch", [x - radius * 2.0, baseY + height * 0.76, z + radius], [radius * 3.8, 0.48, 0.6], C.barkDark);
+    box(root, "sky tree canopy mass", [x, baseY + height + 1.8, z], [radius * 7.5, 4.4, radius * 7.5], index % 2 ? C.grassDark : C.moss, false);
+    box(root, "sky tree canopy top", [x + radius, baseY + height + 4.2, z - radius], [radius * 5.8, 3.4, radius * 5.8], C.grass, false);
   }
 
   function buildBoundary(root) {
@@ -464,6 +435,19 @@
     }
 
     return entity(root, "a-box", attrs);
+  }
+
+  function cylinder(root, name, pos, radius, depth, color) {
+    return entity(root, "a-cylinder", {
+      "data-name": name,
+      position: vector(pos),
+      radius: String(radius),
+      height: String(depth),
+      segments: "12",
+      color: color,
+      roughness: "1",
+      "locomotion-collider": "type: box; size: " + [radius * 2, depth, radius * 2].join(" ")
+    });
   }
 
   function entity(root, tagName, attrs) {
