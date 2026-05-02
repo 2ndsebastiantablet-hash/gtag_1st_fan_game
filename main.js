@@ -310,7 +310,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (sky) {
       sky.setAttribute("color", "#171A20");
     }
-    resetRigToGameSpawn();
+    resetRigToGameSpawnWhenReady();
     note.textContent = message || "In game.";
     renderMenu();
   }
@@ -319,14 +319,19 @@ window.addEventListener("DOMContentLoaded", () => {
     state.playing = false;
     menuRoot.setAttribute("visible", "true");
     menuEnvironment.setAttribute("visible", "true");
-    mapRoot.setAttribute("visible", "false");
+    mapRoot.setAttribute("visible", "true");
     scene.setAttribute("background", "color: #FFFFFF");
     if (sky) {
       sky.setAttribute("color", "#FFFFFF");
     }
   }
 
-  function resetRigToGameSpawn() {
+  function resetRigToGameSpawnWhenReady(attempt = 0) {
+    if (!window.getTerrainHeightAt && attempt < 40) {
+      window.setTimeout(() => resetRigToGameSpawnWhenReady(attempt + 1), 50);
+      return;
+    }
+
     const x = 0;
     const z = 18;
     const terrainY = window.getTerrainHeightAt ? window.getTerrainHeightAt(x, z) : 0;

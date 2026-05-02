@@ -22,7 +22,7 @@ The multiplayer backend and browser client are adapted from the pinned `multipla
 - `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the white/gray VR menu room, multiplayer remotes root, terrain-relative spawn, faster movement tuning, and lighter gravity.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component with terrain-height support for the rig and hands.
 - `map.js` builds the generated storm plain map, smooth terrain visual mesh, raycast terrain collision surface, rain, lightning, sky trees, denser forest trees, and heavier reactive grass.
-- `main.js` builds the VR-first `quiet` menu, joins public multiplayer, creates and joins private multiplayer codes, transitions players out of the menu room into the storm map, sends local VR state, and renders remote players.
+- `main.js` builds the VR-first `quiet` menu, joins public multiplayer, creates and joins private multiplayer codes, transitions players out of the menu room into the always-loaded storm map, sends local VR state, and renders remote players.
 - `frontend/multiplayer-client.js` is the template browser client used by the VR menu.
 - `backend/` contains the template Cloudflare Worker, lobby directory, Durable Object room, and server authority adapted for VR rig/head/hand state.
 - `.nojekyll` keeps GitHub Pages from applying Jekyll processing.
@@ -42,6 +42,7 @@ Map features:
 - No cloud geometry, brown mud patches, puddles, imported models, visible boundary walls, rectangular grass clump blocks, visible terrain tile blocks, or leftover structure blocks.
 - Terrain height is sampled with downward raycasts against the actual ground mesh, while solid `locomotion-collider` boxes remain for tree trunks, tree branches, boundaries, and other non-terrain traversal surfaces.
 - Spawn waits until terrain height is available, then places the rig at terrain height minus the standing hand-reach offset plus a small `0.28` meter drop height so gravity settles the player naturally.
+- The storm map stays loaded as the fail-safe world so the player cannot be left in an empty menu void if menu timing is slow.
 - Player-screen terrain debug statistics are hidden during normal play.
 
 ## Hosting
