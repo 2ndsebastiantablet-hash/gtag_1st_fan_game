@@ -15,9 +15,9 @@ The scene keeps the simple A-Frame/WebXR structure from `simple-vr-scene`, inclu
 
 ## Files
 
-- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, and the map root.
+- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the map root, and grippier scene-level locomotion settings.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component.
-- `map.js` builds the generated storm plain map, terrain colliders, rain, lightning, clouds, and reactive grass.
+- `map.js` builds the generated storm plain map, terrain colliders, rain, lightning, clouds, and dense reactive grass.
 - `main.js` updates the small browser note when entering or exiting VR.
 - `.nojekyll` keeps GitHub Pages from applying Jekyll processing.
 
@@ -31,8 +31,9 @@ Map features:
 - Heavy rain that follows the player so the storm stays dense across the whole map.
 - Occasional lightning flashes with visible strikes and a dark gray storm sky.
 - Low clouds spread across the map.
-- Grass blades of varied height that bend away from the player rig and tracked hands.
-- Muddy paths, puddles, wet boulders, climbable ridges, launch stones, and a lookout slab for Gorilla Tag-style movement.
+- Dense grass blades and clumps of varied height spread across the whole map, bending away from the player rig and tracked hands.
+- Wet green paths, mossy climbable ridges, grassy launch mounds, and a lookout mound for Gorilla Tag-style movement.
+- No brown mud patches, puddles, imported models, or visible boundary walls.
 - Solid `locomotion-collider` boxes for terrain tiles, rocks, ridges, boundaries, paths, and other major traversal surfaces.
 
 ## Hosting

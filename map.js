@@ -9,12 +9,10 @@
     grass: "#3D7A37",
     grassLight: "#5E9D43",
     wetGrass: "#2F6332",
-    mud: "#4C3828",
-    puddle: "#263F4F",
-    rock: "#555A5B",
-    rockLight: "#747A78",
-    cloud: "#3A3D43",
-    cloudLight: "#5E646D",
+    moss: "#4E8B3D",
+    mossLight: "#6DAF4E",
+    cloud: "#4B515A",
+    cloudLight: "#69717D",
     rain: "#A8CFE8",
     lightning: "#EAF6FF"
   };
@@ -54,7 +52,6 @@
       id: "lightning-system",
       "lightning-storm": ""
     });
-    buildWater(root);
     buildBoundary(root);
     refreshLocomotionColliders();
   }
@@ -81,7 +78,7 @@
 
     paths.forEach(function (p) {
       const y = terrainHeight(p[0], p[2]) + 0.08;
-      box(root, "muddy rain path", [p[0], y, p[2]], [p[3], p[4], p[5]], C.mud);
+      box(root, "low grass path", [p[0], y, p[2]], [p[3], p[4], p[5]], C.wetGrass);
     });
   }
 
@@ -100,41 +97,41 @@
 
     ridges.forEach(function (r, i) {
       const top = terrainHeight(r[0], r[1]) + r[3] * 0.5;
-      box(root, "climbable wet rock ridge", [r[0], top, r[1]], [r[2], r[3], r[4]], i % 2 ? C.rockLight : C.rock);
+      box(root, "grass covered climb ridge", [r[0], top, r[1]], [r[2], r[3], r[4]], i % 2 ? C.mossLight : C.moss);
     });
 
     for (let i = 0; i < 18; i += 1) {
       const x = -38 + i * 4.4;
       const z = 38 - Math.abs(i - 9) * 1.8;
       const y = terrainHeight(x, z) + 0.45 + (i % 3) * 0.18;
-      box(root, "wet stone launch pad", [x, y, z], [3.5, 0.9, 3], i % 2 ? C.rock : C.rockLight);
+      box(root, "grass launch mound", [x, y, z], [3.5, 0.9, 3], i % 2 ? C.grass : C.mossLight);
     }
 
     for (let i = 0; i < 12; i += 1) {
       const x = 35 - i * 5.5;
       const z = -36 + Math.sin(i) * 6;
       const y = terrainHeight(x, z) + 0.55;
-      box(root, "low boulder shortcut", [x, y, z], [3.2, 1.1 + (i % 4) * 0.4, 2.8], i % 2 ? C.rockLight : C.rock);
+      box(root, "mossy shortcut mound", [x, y, z], [3.2, 1.1 + (i % 4) * 0.4, 2.8], i % 2 ? C.mossLight : C.moss);
     }
 
-    box(root, "storm lookout slab", [0, terrainHeight(0, -34) + 3.2, -34], [18, 1, 9], C.rock);
-    box(root, "storm lookout climb face", [0, terrainHeight(0, -29) + 2.1, -29], [17, 4.2, 1.2], C.rockLight);
+    box(root, "grassy lookout mound", [0, terrainHeight(0, -34) + 3.2, -34], [18, 1, 9], C.moss);
+    box(root, "grassy lookout climb face", [0, terrainHeight(0, -29) + 2.1, -29], [17, 4.2, 1.2], C.mossLight);
 
     for (let i = 0; i < 7; i += 1) {
-      box(root, "lookout hand ledge", [-7.5 + i * 2.5, terrainHeight(0, -29) + 0.9 + i * 0.42, -28.2], [1.7, 0.34, 1.2], C.rock);
+      box(root, "lookout grass hand ledge", [-7.5 + i * 2.5, terrainHeight(0, -29) + 0.9 + i * 0.42, -28.2], [1.7, 0.34, 1.2], C.moss);
     }
   }
 
   function buildGrass(root) {
     entity(root, "a-entity", {
       id: "reactive-grass",
-      "reactive-grass-field": "count: 900; size: " + MAP_SIZE + "; seed: " + SEED
+      "reactive-grass-field": "count: 2200; size: " + MAP_SIZE + "; seed: " + SEED
     });
 
-    for (let i = 0; i < 70; i += 1) {
+    for (let i = 0; i < 220; i += 1) {
       const p = randomPoint(i * 13 + 8, HALF - 4);
       const y = terrainHeight(p[0], p[1]) + 0.35;
-      box(root, "thick grass clump", [p[0], y, p[1]], [0.42, 0.7 + (i % 5) * 0.22, 0.42], i % 2 ? C.grassLight : C.grass, false);
+      box(root, "thick grass clump", [p[0], y, p[1]], [0.5, 0.8 + (i % 6) * 0.2, 0.5], [C.grassDark, C.grass, C.grassLight, C.wetGrass][i % 4], false);
     }
   }
 
@@ -168,27 +165,11 @@
     document.getElementById("lightning-bolt").setAttribute("visible", "false");
   }
 
-  function buildWater(root) {
-    const puddles = [
-      [-18, 12, 10, 5],
-      [18, 22, 12, 6],
-      [27, -30, 9, 5],
-      [-31, -5, 11, 6],
-      [4, -11, 12, 4]
-    ];
-
-    puddles.forEach(function (p) {
-      box(root, "rain puddle", [p[0], terrainHeight(p[0], p[1]) + 0.12, p[1]], [p[2], 0.08, p[3]], C.puddle, false);
-      box(root, "puddle stone rim", [p[0], terrainHeight(p[0], p[1]) + 0.32, p[1] - p[3] / 2], [p[2], 0.35, 0.45], C.rock);
-      box(root, "puddle stone rim", [p[0], terrainHeight(p[0], p[1]) + 0.32, p[1] + p[3] / 2], [p[2], 0.35, 0.45], C.rock);
-    });
-  }
-
   function buildBoundary(root) {
-    box(root, "north storm wall", [0, 3.6, -HALF - 1], [MAP_SIZE, 7.2, 2], C.rock);
-    box(root, "south storm wall", [0, 3.6, HALF + 1], [MAP_SIZE, 7.2, 2], C.rock);
-    box(root, "west storm wall", [-HALF - 1, 3.6, 0], [2, 7.2, MAP_SIZE], C.rock);
-    box(root, "east storm wall", [HALF + 1, 3.6, 0], [2, 7.2, MAP_SIZE], C.rock);
+    box(root, "north invisible storm boundary", [0, 3.6, -HALF - 1], [MAP_SIZE, 7.2, 2], C.grassDark, true, false);
+    box(root, "south invisible storm boundary", [0, 3.6, HALF + 1], [MAP_SIZE, 7.2, 2], C.grassDark, true, false);
+    box(root, "west invisible storm boundary", [-HALF - 1, 3.6, 0], [2, 7.2, MAP_SIZE], C.grassDark, true, false);
+    box(root, "east invisible storm boundary", [HALF + 1, 3.6, 0], [2, 7.2, MAP_SIZE], C.grassDark, true, false);
 
     entity(root, "a-text", {
       value: "STORM PLAIN",
@@ -466,7 +447,7 @@
     return a + (b - a) * t;
   }
 
-  function box(root, name, pos, size, color, solid) {
+  function box(root, name, pos, size, color, solid, visible) {
     const attrs = {
       "data-name": name,
       position: vector(pos),
@@ -474,7 +455,8 @@
       height: String(size[1]),
       depth: String(size[2]),
       color: color,
-      roughness: "1"
+      roughness: "1",
+      visible: visible === false ? "false" : "true"
     };
 
     if (solid !== false) {
