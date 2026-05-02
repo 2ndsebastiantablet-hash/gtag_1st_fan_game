@@ -9,6 +9,7 @@ const PUBLIC_FRONTEND_PATHS = new Set([
   "/index.html",
   "/main.js",
   "/map.js",
+  "/city-biome.js",
   "/gorilla-locomotion.js"
 ]);
 
