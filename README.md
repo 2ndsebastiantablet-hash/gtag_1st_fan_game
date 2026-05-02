@@ -22,7 +22,7 @@ The multiplayer backend and browser client are adapted from the pinned `multipla
 - `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the white/gray VR menu room, multiplayer remotes root, terrain-relative spawn, faster movement tuning, and lighter gravity.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component with terrain-height support for the rig and hands.
 - `map.js` builds the generated storm plain map, smooth terrain visual mesh, raycast terrain collision surface, rain, lightning, sky trees, denser forest trees, and heavier reactive grass.
-- `city-biome.js` adds a seed-placed abandoned city biome inside the rainforest using lightweight A-Frame primitives and locomotion colliders.
+- `city-biome.js` adds a seed-placed, extra-large abandoned city biome inside the rainforest using lightweight A-Frame primitives and locomotion colliders.
 - `main.js` builds the VR-first `quiet` menu, joins public multiplayer, creates and joins private multiplayer codes, transitions players out of the menu room into the always-loaded storm map, sends local VR state, and renders remote players.
 - `backend/server.js` serves the Worker API and static frontend assets, including `map.js` and `city-biome.js`, so the hosted map scripts can actually load.
 - `frontend/multiplayer-client.js` is the template browser client used by the VR menu.
@@ -40,9 +40,9 @@ Map features:
 - Occasional lightning flashes with visible strikes and a dark gray storm sky.
 - Denser triangular grass blades of varied height spread across the whole map, bending away from the player rig and tracked hands.
 - A much fuller forest of climbable trees, plus tall sky trees with trunks, branches, and hand nubs.
-- A seed-placed abandoned city biome buried inside the rainforest, with huge climbable buildings, broken towers, cracked streets, rubble piles, crashed cars, elevated shortcuts, and vines overtaking the concrete.
+- A seed-placed abandoned city biome buried inside the rainforest, now expanded into a much wider concrete maze with huge climbable buildings, broken towers, cracked streets, rubble piles, crashed cars, elevated shortcuts, and heavier vine overgrowth.
 - Open grassy hills and tree routes for Gorilla Tag-style movement.
-- A dense concrete maze section where the player feels small under oversized buildings, but can still climb, cut through vine routes, and escape back into the surrounding forest.
+- A dense concrete maze section where the player feels small under oversized buildings, but can still climb, cut through more vine routes, use longer skybridge shortcuts, and escape back into the surrounding forest.
 - No cloud geometry, brown mud patches, puddles, imported models, visible boundary walls, rectangular grass clump blocks, visible terrain tile blocks, or leftover structure blocks.
 - Terrain height is sampled with downward raycasts against the actual ground mesh, while solid `locomotion-collider` boxes remain for tree trunks, tree branches, boundaries, and other non-terrain traversal surfaces.
 - Spawn waits until terrain height is available, then places the rig at terrain height minus the standing hand-reach offset plus a small `0.28` meter drop height so gravity settles the player naturally.

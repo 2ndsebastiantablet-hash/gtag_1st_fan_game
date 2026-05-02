@@ -1,5 +1,6 @@
 (function () {
   const SEED = 88421;
+  const MAP_HALF = 46;
   const CITY = chooseCity();
   const C = {
     concreteDark: "#4D5254",
@@ -55,46 +56,69 @@
   }
 
   function buildRoadMaze(root) {
-    for (let i = -3; i <= 3; i += 1) {
-      for (let j = -3; j <= 3; j += 1) {
+    for (let i = -5; i <= 5; i += 1) {
+      for (let j = -4; j <= 4; j += 1) {
         const x = CITY.x + i * 6.2;
         const z = CITY.z + j * 6.2;
         const y = ground(x, z) + 0.045;
 
-        if (Math.abs(i) <= 2) {
+        if (Math.abs(i) <= 4) {
           box(root, "city cracked street slab", [x, y, z], [3.2, 0.08, 6.8], C.asphalt, false);
         }
 
-        if (Math.abs(j) <= 2) {
+        if (Math.abs(j) <= 3) {
           box(root, "city cracked cross street slab", [x, y + 0.01, z], [6.8, 0.08, 3.2], C.asphalt, false);
         }
       }
     }
 
-    for (let i = 0; i < 38; i += 1) {
+    for (let i = 0; i < 78; i += 1) {
       const rnd = seeded(SEED + i * 19);
-      const x = CITY.x + (rnd() - 0.5) * 42;
-      const z = CITY.z + (rnd() - 0.5) * 42;
+      const x = CITY.x + (rnd() - 0.5) * CITY.width;
+      const z = CITY.z + (rnd() - 0.5) * CITY.depth;
       const slab = box(root, "city broken sidewalk chunk", [x, ground(x, z) + 0.1, z], [1.2 + rnd() * 2.8, 0.12, 0.8 + rnd() * 1.8], rnd() > 0.5 ? C.concrete : C.concreteLight, false);
       slab.setAttribute("rotation", "0 " + (rnd() * 180).toFixed(1) + " 0");
     }
   }
 
   function buildTowers(root) {
-    const towers = [
-      [-18, -17, 5.8, 6.8, 36, true], [-8, -18, 5.1, 7.4, 28, false], [4, -18, 7.7, 6.2, 46, true], [17, -16, 6.2, 7.6, 34, true],
-      [-20, -6, 7.3, 5.9, 30, false], [-8, -6, 5.8, 6.4, 42, true], [5, -7, 5.3, 7.8, 32, false], [18, -5, 8.0, 6.1, 50, true],
-      [-18, 8, 6.2, 7.5, 40, true], [-6, 8, 7.0, 5.9, 28, false], [7, 7, 5.8, 7.1, 37, true], [19, 8, 5.4, 6.4, 31, false],
-      [-12, 19, 8.1, 6.1, 35, true], [3, 19, 7.2, 7.2, 47, true], [17, 20, 6.0, 7.0, 39, true]
-    ];
+    const towers = [];
+
+    for (let i = -5; i <= 5; i += 1) {
+      for (let j = -4; j <= 4; j += 1) {
+        const rnd = seeded(SEED + 3200 + (i + 8) * 101 + (j + 7) * 43);
+
+        if ((i * 7 + j * 11 + 19) % 5 < 2) {
+          continue;
+        }
+
+        towers.push([
+          i * 6.25 + (rnd() - 0.5) * 0.9,
+          j * 6.2 + (rnd() - 0.5) * 0.9,
+          4.9 + rnd() * 2.4,
+          5.0 + rnd() * 2.5,
+          28 + rnd() * 35,
+          rnd() > 0.42
+        ]);
+      }
+    }
+
+    towers.push(
+      [-31, -22, 8.2, 7.6, 58, true],
+      [-28, 19, 7.6, 8.1, 64, true],
+      [29, -18, 8.4, 7.4, 70, true],
+      [31, 17, 7.8, 8.0, 61, true],
+      [2, -27, 8.8, 7.9, 74, true],
+      [4, 24, 8.0, 8.4, 66, true]
+    );
 
     towers.forEach(function (t, i) {
       tower(root, CITY.x + t[0], CITY.z + t[1], t[2], t[3], t[4], i, t[5]);
     });
 
-    const bridgeA = box(root, "city elevated concrete shortcut", [CITY.x - 1, ground(CITY.x - 1, CITY.z - 4) + 12.3, CITY.z - 4], [20, 1.05, 2.1], C.concrete, true);
+    const bridgeA = box(root, "city elevated concrete shortcut", [CITY.x - 6, ground(CITY.x - 6, CITY.z - 4) + 12.3, CITY.z - 4], [30, 1.05, 2.1], C.concrete, true);
     bridgeA.setAttribute("rotation", "0 5 6");
-    const bridgeB = box(root, "city collapsed skybridge shortcut", [CITY.x + 8, ground(CITY.x + 8, CITY.z + 12) + 8.3, CITY.z + 12], [16, 1.0, 2.0], C.concreteDark, true);
+    const bridgeB = box(root, "city collapsed skybridge shortcut", [CITY.x + 15, ground(CITY.x + 15, CITY.z + 15) + 8.3, CITY.z + 15], [28, 1.0, 2.0], C.concreteDark, true);
     bridgeB.setAttribute("rotation", "0 -31 -15");
   }
 
@@ -109,19 +133,19 @@
       box(root, "city dark blown out wall", [x - width / 2 - 0.035, y + height * 0.68, z], [0.07, height * 0.25, depth * 0.68], C.window, false);
     }
 
-    for (let row = 1; row < Math.min(13, Math.floor(height / 3)); row += 1) {
-      for (let col = 0; col < Math.max(2, Math.floor(width / 1.5)); col += 1) {
+    for (let row = 1; row < Math.min(10, Math.floor(height / 3)); row += 2) {
+      for (let col = 0; col < Math.min(4, Math.max(2, Math.floor(width / 1.7))); col += 1) {
         if ((row + col + index) % 4 !== 0) {
           box(root, "city dark window", [x - width * 0.36 + col * 1.15, y + 2.4 + row * 2.55, z - depth / 2 - 0.035], [0.55, 1.05, 0.05], C.window, false);
         }
       }
     }
 
-    for (let i = 0; i < 5; i += 1) {
+    for (let i = 0; i < 8; i += 1) {
       const side = i % 2 ? -1 : 1;
-      const vineHeight = height * (0.38 + ((index + i) % 5) * 0.11);
+      const vineHeight = height * (0.34 + ((index + i) % 6) * 0.1);
       const vx = x + side * (width / 2 + 0.14);
-      const vz = z - depth * 0.42 + i * depth * 0.2;
+      const vz = z - depth * 0.46 + i * depth * 0.14;
       const vine = box(root, "city thick climbable building vine", [vx, y + vineHeight / 2 + 0.65, vz], [0.34, vineHeight, 0.32], i % 2 ? C.vineLight : C.vine, true);
       vine.setAttribute("rotation", "0 " + (side > 0 ? 0 : 180) + " " + (i % 2 ? 7 : -5));
     }
@@ -130,22 +154,28 @@
   }
 
   function buildRubble(root) {
-    for (let i = 0; i < 64; i += 1) {
+    for (let i = 0; i < 138; i += 1) {
       const rnd = seeded(SEED + 601 + i * 47);
-      const x = CITY.x + (rnd() - 0.5) * 42;
-      const z = CITY.z + (rnd() - 0.5) * 42;
-      const block = box(root, "city solid rubble pile", [x, ground(x, z) + 0.25, z], [0.8 + rnd() * 2.6, 0.35 + rnd() * 1.35, 0.7 + rnd() * 2.3], rnd() > 0.5 ? C.concrete : C.concreteDark, true);
+      const x = CITY.x + (rnd() - 0.5) * CITY.width;
+      const z = CITY.z + (rnd() - 0.5) * CITY.depth;
+      const size = [0.8 + rnd() * 2.6, 0.35 + rnd() * 1.35, 0.7 + rnd() * 2.3];
+      const block = box(root, "city solid rubble pile", [x, ground(x, z) + 0.25, z], size, rnd() > 0.5 ? C.concrete : C.concreteDark, true);
       block.setAttribute("rotation", [rnd() * 16 - 8, rnd() * 180, rnd() * 16 - 8].map(fixed).join(" "));
+      box(root, "city explicit invisible rubble collider", [x, ground(x, z) + Math.max(0.35, size[1] * 0.5), z], [size[0] + 0.35, size[1] + 0.25, size[2] + 0.35], C.concrete, true, false);
     }
 
-    const fallen = box(root, "city fallen tower chunk", [CITY.x + 11, ground(CITY.x + 11, CITY.z + 14) + 2.25, CITY.z + 14], [15, 4.2, 5.4], C.concreteDark, true);
+    const fallen = box(root, "city fallen tower chunk", [CITY.x + 21, ground(CITY.x + 21, CITY.z + 18) + 2.25, CITY.z + 18], [23, 4.2, 5.4], C.concreteDark, true);
     fallen.setAttribute("rotation", "8 -32 11");
   }
 
   function buildCars(root) {
     const cars = [
-      [-13, -9, 0, true], [-2, -13, 90, false], [11, -8, -28, true], [-16, 5, 18, false],
-      [1, 3, 0, true], [13, 13, 74, false], [-7, 18, -84, true], [18, -1, 35, true]
+      [-28, -22, 0, true], [-18, -19, 90, false], [-6, -24, -25, true], [7, -22, 35, false],
+      [20, -20, -28, true], [31, -14, 70, false], [-31, -6, 18, false], [-16, -3, 0, true],
+      [-2, -7, 90, false], [13, -5, -40, true], [28, -2, 35, true], [-25, 8, 75, false],
+      [-10, 6, 0, true], [4, 7, -84, true], [17, 9, 16, false], [30, 13, -30, true],
+      [-30, 21, 90, true], [-16, 19, -15, false], [2, 20, 44, true], [17, 22, 74, false],
+      [29, 23, -72, true], [8, -14, 12, true]
     ];
 
     cars.forEach(function (c, i) {
@@ -155,18 +185,23 @@
       const color = [C.rust, "#315C37", "#4D5356"][i % 3];
       const body = box(root, "city abandoned solid car body", [x, y + 0.45, z], [2.7, 0.8, 4.2], color, true);
       const cabin = box(root, "city abandoned car cabin", [x, y + 1.05, z - 0.18], [1.75, 0.85, 1.7], C.window, true);
-      const cover = box(root, "city car vine cover", [x, y + 1.42, z], [2.5, 0.22, 3.8], i % 2 ? C.vine : C.leaf, false);
+      const cover = box(root, "city car vine cover", [x, y + 1.42, z], [2.5, 0.22, 3.8], i % 2 ? C.vine : C.leaf, true);
+      const hull = box(root, "city explicit invisible full car collider", [x, y + 0.78, z], [4.5, 1.7, 4.9], C.rust, true, false);
       [body, cabin, cover].forEach(function (part) {
         part.setAttribute("rotation", "0 " + c[2] + " " + (c[3] ? i % 2 ? -8 : 7 : 0));
       });
+      hull.setAttribute("rotation", "0 " + c[2] + " 0");
     });
   }
 
   function buildVineRoutes(root) {
     const spans = [
-      [-19, -3, -6, -3, 6.0], [-4, -15, -4, 5, 7.2], [7, -13, 18, -13, 9.4],
-      [-17, 9, -1, 9, 6.8], [6, 6, 6, 20, 8.3], [-14, 18, 13, 18, 5.5],
-      [-18, -17, 18, 8, 11.2], [18, -5, -12, 19, 10.4]
+      [-33, -23, -13, -23, 6.0], [-24, -14, -24, 12, 7.2], [-12, -24, 16, -24, 9.4],
+      [0, -22, 0, 21, 8.0], [14, -20, 32, -20, 10.2], [31, -11, 31, 22, 7.4],
+      [-34, -2, -8, -2, 6.8], [-17, 8, 11, 8, 5.8], [8, 15, 35, 15, 8.3],
+      [-31, 21, -3, 21, 5.5], [-14, 25, 18, 25, 7.6], [-32, -23, 32, 18, 12.0],
+      [32, -18, -28, 23, 10.8], [-6, -26, 26, 26, 13.2], [-34, 11, 28, -8, 9.2],
+      [-22, -6, 21, 23, 6.4], [22, -27, -22, 24, 11.6], [-35, -15, 35, -15, 7.0]
     ];
 
     spans.forEach(function (s, i) {
@@ -184,15 +219,19 @@
   }
 
   function buildForestRing(root) {
-    for (let i = 0; i < 72; i += 1) {
+    for (let i = 0; i < 118; i += 1) {
       const rnd = seeded(SEED + 1100 + i * 31);
-      const angle = (i / 72) * Math.PI * 2 + (rnd() - 0.5) * 0.24;
-      const radius = CITY.radius + 1.5 + rnd() * 8;
-      const x = CITY.x + Math.cos(angle) * radius;
-      const z = CITY.z + Math.sin(angle) * radius;
+      const angle = (i / 118) * Math.PI * 2 + (rnd() - 0.5) * 0.24;
+      const x = CITY.x + Math.cos(angle) * (CITY.width * 0.5 + 1.5 + rnd() * 7);
+      const z = CITY.z + Math.sin(angle) * (CITY.depth * 0.5 + 1.5 + rnd() * 7);
       const h = 13 + rnd() * 18;
       const r = 0.55 + rnd() * 0.55;
       const y = ground(x, z);
+
+      if (Math.abs(x) > MAP_HALF - 2 || Math.abs(z) > MAP_HALF - 2) {
+        continue;
+      }
+
       cylinder(root, "city surrounding rainforest trunk", [x, y + h / 2, z], r, h, i % 2 ? C.bark : "#3A2518");
       box(root, "city surrounding rainforest canopy", [x, y + h + 1.5, z], [r * 6.6, 3.4, r * 6.6], i % 2 ? C.leaf : C.vine, false);
     }
@@ -208,17 +247,23 @@
 
       const p = node.object3D.position;
 
-      if (Math.hypot(p.x - CITY.x, p.z - CITY.z) < CITY.radius * 0.92) {
+      if (isInsideCityFootprint(p.x, p.z, 0.96)) {
         node.remove();
       }
     });
   }
 
   function chooseCity() {
-    const options = [[-24, -17], [23, -18], [-26, 6], [24, 7]];
+    const options = [[2, -17], [-4, -18], [7, -16], [-8, -16]];
     const rnd = seeded(SEED + 13);
     const pick = options[Math.floor(rnd() * options.length)];
-    return { x: pick[0], z: pick[1], radius: 24 };
+    return { x: pick[0], z: pick[1], radius: 39, width: 74, depth: 58 };
+  }
+
+  function isInsideCityFootprint(x, z, scale) {
+    const nx = (x - CITY.x) / (CITY.width * 0.5 * scale);
+    const nz = (z - CITY.z) / (CITY.depth * 0.5 * scale);
+    return nx * nx + nz * nz < 1;
   }
 
   function ground(x, z) {
@@ -229,7 +274,7 @@
     return 0;
   }
 
-  function box(root, name, pos, size, color, solid) {
+  function box(root, name, pos, size, color, solid, visible) {
     const attrs = {
       "data-name": name,
       position: vector(pos),
@@ -237,7 +282,8 @@
       height: String(size[1]),
       depth: String(size[2]),
       color: color,
-      roughness: "1"
+      roughness: "1",
+      visible: visible === false ? "false" : "true"
     };
 
     if (solid !== false) {
