@@ -40,6 +40,7 @@
       floorHeight: { default: 0 },
       terrainContactOffset: { default: 0.08 },
       playerHeightOffset: { default: 0.62 },
+      spawnHeightOffset: { default: 0.28 },
       gravity: { default: GRAVITY },
       airDrag: { default: AIR_DRAG },
       groundDrag: { default: GROUND_DRAG },
@@ -80,6 +81,7 @@
       this.terrainLeft = { height: this.data.floorHeight, hit: false };
       this.terrainRight = { height: this.data.floorHeight, hit: false };
       this.lastDebugLogTime = 0;
+      this.spawnRetryTimer = null;
 
       this.leftTouchingFloor = false;
       this.rightTouchingFloor = false;
@@ -115,13 +117,24 @@
 
     remove: function () {
       this.el.sceneEl.removeEventListener("enter-vr", this.resetTracking);
+
+      if (this.spawnRetryTimer) {
+        clearTimeout(this.spawnRetryTimer);
+        this.spawnRetryTimer = null;
+      }
     },
 
     resetTracking: function () {
       // Lower the XR reference space slightly so standing players can reach the
       // in-game floor comfortably without crouching to their real floor.
       this.updateTerrainSamples();
-      this.rig.position.y = this.getGroundedRigY();
+
+      if (!this.terrainPlayer.hit) {
+        this.scheduleSpawnRetry();
+        return;
+      }
+
+      this.rig.position.y = this.getGroundedRigY() + this.data.spawnHeightOffset;
       this.velocity.set(0, 0, 0);
       this.launchVelocity.set(0, 0, 0);
       this.leftDelta.set(0, 0, 0);
@@ -147,6 +160,19 @@
       this.updateHandVisual(this.data.leftHand, this.leftVisual, this.currentLeftWorld);
       this.updateHandVisual(this.data.rightHand, this.rightVisual, this.currentRightWorld);
       this.updateDebugText();
+    },
+
+    scheduleSpawnRetry: function () {
+      const self = this;
+
+      if (this.spawnRetryTimer) {
+        return;
+      }
+
+      this.spawnRetryTimer = setTimeout(function () {
+        self.spawnRetryTimer = null;
+        self.resetTracking();
+      }, 60);
     },
 
     tock: function (time, deltaMs) {

@@ -15,7 +15,7 @@ The scene keeps the simple A-Frame/WebXR structure from `simple-vr-scene`, inclu
 
 ## Files
 
-- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the map root, above-ground spawn, stronger gravity, extra high ground drag, and a temporary terrain debug readout.
+- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the map root, terrain-relative spawn, stronger gravity, extra high ground drag, and a temporary terrain debug readout.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component with terrain-height support for the rig and hands.
 - `map.js` builds the generated storm plain map, smooth terrain visual mesh, raycast terrain collision surface, rain, lightning, sky trees, dense forest trees, and heavy reactive grass.
 - `main.js` updates the small browser note when entering or exiting VR.
@@ -35,6 +35,7 @@ Map features:
 - Open grassy hills and tree routes for Gorilla Tag-style movement.
 - No cloud geometry, brown mud patches, puddles, imported models, visible boundary walls, rectangular grass clump blocks, visible terrain tile blocks, or leftover structure blocks.
 - Terrain height is sampled with downward raycasts against the actual ground mesh, while solid `locomotion-collider` boxes remain for tree trunks, tree branches, boundaries, and other non-terrain traversal surfaces.
+- Spawn waits until terrain height is available, then places the rig at terrain height minus the standing hand-reach offset plus a small `0.28` meter drop height so gravity settles the player naturally.
 - Temporary terrain debug shows player x/z, terrain height under the player, rig/head y, hand terrain heights, hand touch state, grounded state, and terrain ray hit state.
 
 ## Hosting
