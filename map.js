@@ -1,6 +1,6 @@
 (function () {
   const MAP_SIZE = 92;
-  const TILE_SIZE = 7;
+  const TILE_SIZE = 3.5;
   const HALF = MAP_SIZE / 2;
   const SEED = 4319;
 
@@ -13,6 +13,9 @@
     mossLight: "#6DAF4E",
     bark: "#5B3A24",
     barkDark: "#3A2518",
+    leafDark: "#173D1F",
+    leaf: "#286B2E",
+    leafLight: "#3F8F3C",
     rain: "#A8CFE8",
     lightning: "#EAF6FF"
   };
@@ -47,6 +50,7 @@
     buildTerrain(root);
     buildGrass(root);
     buildSkyTrees(root);
+    buildForest(root);
     buildStormEffects(root);
     entity(root, "a-entity", {
       id: "lightning-system",
@@ -57,42 +61,33 @@
   }
 
   function buildTerrain(root) {
+    entity(root, "a-entity", {
+      id: "storm-terrain-visual",
+      "storm-terrain-visual": "size: " + MAP_SIZE + "; divisions: 64"
+    });
+
     for (let x = -HALF + TILE_SIZE / 2; x < HALF; x += TILE_SIZE) {
       for (let z = -HALF + TILE_SIZE / 2; z < HALF; z += TILE_SIZE) {
-        const top = terrainHeight(x, z);
+        const top = terrainTileHeight(x, z);
         const bottom = -2.2;
         const height = Math.max(0.35, top - bottom);
         const color = top > 2.2 ? C.grassLight : top > 1.1 ? C.grass : C.wetGrass;
 
-        box(root, "rolling storm hill tile", [x, bottom + height / 2, z], [TILE_SIZE + 0.12, height, TILE_SIZE + 0.12], color);
+        box(root, "rolling storm hill collider", [x, bottom + height / 2, z], [TILE_SIZE + 0.18, height, TILE_SIZE + 0.18], color, true, false);
       }
     }
-
-    const paths = [
-      [0, 0, 0, 9, 0.12, 58],
-      [-24, 0, -12, 7, 0.12, 48],
-      [24, 0, 10, 7, 0.12, 48],
-      [0, 0, -25, 58, 0.12, 7],
-      [0, 0, 26, 60, 0.12, 7]
-    ];
-
-    paths.forEach(function (p) {
-      const y = terrainHeight(p[0], p[2]) + 0.08;
-      box(root, "low grass path", [p[0], y, p[2]], [p[3], p[4], p[5]], C.wetGrass);
-    });
   }
 
   function buildGrass(root) {
     entity(root, "a-entity", {
       id: "reactive-grass",
-      "reactive-grass-field": "count: 2200; size: " + MAP_SIZE + "; seed: " + SEED
+      "reactive-grass-field": "count: 6200; size: " + MAP_SIZE + "; seed: " + SEED + "; color: " + C.grassLight + "; heightMin: 0.7; heightMax: 2.25"
     });
 
-    for (let i = 0; i < 220; i += 1) {
-      const p = randomPoint(i * 13 + 8, HALF - 4);
-      const y = terrainHeight(p[0], p[1]) + 0.35;
-      box(root, "thick grass clump", [p[0], y, p[1]], [0.5, 0.8 + (i % 6) * 0.2, 0.5], [C.grassDark, C.grass, C.grassLight, C.wetGrass][i % 4], false);
-    }
+    entity(root, "a-entity", {
+      id: "reactive-tall-grass",
+      "reactive-grass-field": "count: 2400; size: " + MAP_SIZE + "; seed: " + (SEED + 73) + "; color: " + C.grass + "; heightMin: 1.4; heightMax: 3.1"
+    });
   }
 
   function buildSkyTrees(root) {
@@ -105,6 +100,41 @@
     trees.forEach(function (t, i) {
       tallTree(root, t[0], t[1], t[2], t[3], i);
     });
+  }
+
+  function buildForest(root) {
+    for (let i = 0; i < 74; i += 1) {
+      const p = randomPoint(SEED + i * 97, HALF - 5);
+      const distanceFromSpawn = Math.hypot(p[0], p[1] - 18);
+
+      if (distanceFromSpawn < 6) {
+        p[0] += p[0] < 0 ? -8 : 8;
+        p[1] += p[1] < 18 ? -8 : 8;
+      }
+
+      forestTree(root, p[0], p[1], i);
+    }
+  }
+
+  function forestTree(root, x, z, index) {
+    const rnd = seeded(SEED + index * 211);
+    const radius = 0.55 + rnd() * 0.55;
+    const height = 9 + rnd() * 13;
+    const baseY = terrainHeight(x, z);
+
+    cylinder(root, "dense forest climbable trunk", [x, baseY + height / 2, z], radius, height, index % 2 ? C.bark : C.barkDark);
+
+    if (index % 3 !== 0) {
+      const branchY = baseY + height * (0.45 + rnd() * 0.22);
+      const branchLength = 2.2 + rnd() * 2.3;
+      const angle = rnd() * Math.PI * 2;
+      const bx = Math.cos(angle) * branchLength * 0.4;
+      const bz = Math.sin(angle) * branchLength * 0.4;
+      const branch = box(root, "dense forest branch route", [x + bx, branchY, z + bz], [branchLength, 0.34, 0.42], C.bark);
+      branch.setAttribute("rotation", "0 " + (angle * 180 / Math.PI).toFixed(2) + " 0");
+    }
+
+    box(root, "dense forest canopy", [x, baseY + height + 1.25, z], [radius * 6.2, 3.2, radius * 6.2], [C.leafDark, C.leaf, C.leafLight][index % 3], false);
   }
 
   function buildStormEffects(root) {
@@ -275,11 +305,68 @@
       }
     });
 
+    AFRAME.registerComponent("storm-terrain-visual", {
+      schema: {
+        size: { default: 92 },
+        divisions: { default: 64 }
+      },
+
+      init: function () {
+        const size = this.data.size;
+        const divisions = this.data.divisions;
+        const half = size / 2;
+        const step = size / divisions;
+        const positions = [];
+        const colors = [];
+        const indices = [];
+        const color = new THREE.Color();
+
+        for (let z = 0; z <= divisions; z += 1) {
+          for (let x = 0; x <= divisions; x += 1) {
+            const worldX = -half + x * step;
+            const worldZ = -half + z * step;
+            const y = terrainHeight(worldX, worldZ);
+            positions.push(worldX, y, worldZ);
+
+            color.set(y > 2.2 ? C.grassLight : y > 1.1 ? C.grass : C.wetGrass);
+            colors.push(color.r, color.g, color.b);
+          }
+        }
+
+        for (let z = 0; z < divisions; z += 1) {
+          for (let x = 0; x < divisions; x += 1) {
+            const a = z * (divisions + 1) + x;
+            const b = a + 1;
+            const c = a + divisions + 1;
+            const d = c + 1;
+            indices.push(a, c, b, b, c, d);
+          }
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+
+        const material = new THREE.MeshStandardMaterial({
+          vertexColors: true,
+          roughness: 1,
+          metalness: 0
+        });
+
+        this.el.object3D.add(new THREE.Mesh(geometry, material));
+      }
+    });
+
     AFRAME.registerComponent("reactive-grass-field", {
       schema: {
         count: { default: 700 },
         size: { default: 90 },
-        seed: { default: 1 }
+        seed: { default: 1 },
+        color: { default: C.grassLight },
+        heightMin: { default: 0.45 },
+        heightMax: { default: 1.75 }
       },
 
       init: function () {
@@ -294,10 +381,20 @@
         this.euler = new THREE.Euler();
         this.tmp = new THREE.Vector3();
 
-        const geometry = new THREE.PlaneGeometry(0.12, 1);
-        geometry.translate(0, 0.5, 0);
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute([
+          -0.08, 0, 0,
+          0.08, 0, 0,
+          0, 1, 0
+        ], 3));
+        geometry.setAttribute("uv", new THREE.Float32BufferAttribute([
+          0, 0,
+          1, 0,
+          0.5, 1
+        ], 2));
+        geometry.computeVertexNormals();
         const material = new THREE.MeshStandardMaterial({
-          color: C.grassLight,
+          color: this.data.color,
           roughness: 1,
           metalness: 0,
           side: THREE.DoubleSide
@@ -314,8 +411,8 @@
           this.items.push({
             x: x,
             z: z,
-            y: terrainHeight(x, z) + 0.04,
-            h: 0.45 + rnd() * 1.3,
+            y: terrainHeight(x, z) + 0.05,
+            h: this.data.heightMin + rnd() * (this.data.heightMax - this.data.heightMin),
             w: 0.55 + rnd() * 0.9,
             phase: rnd() * Math.PI * 2
           });
@@ -383,6 +480,17 @@
 
     h = Math.max(0, h + 0.2);
     return h * (1 - spawnFlat);
+  }
+
+  function terrainTileHeight(x, z) {
+    const r = TILE_SIZE * 0.48;
+    return Math.max(
+      terrainHeight(x, z),
+      terrainHeight(x - r, z - r),
+      terrainHeight(x + r, z - r),
+      terrainHeight(x - r, z + r),
+      terrainHeight(x + r, z + r)
+    );
   }
 
   function hill(x, z, cx, cz, radius) {

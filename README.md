@@ -15,9 +15,9 @@ The scene keeps the simple A-Frame/WebXR structure from `simple-vr-scene`, inclu
 
 ## Files
 
-- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the map root, higher spawn, stronger gravity, and non-slippery scene-level locomotion settings.
+- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the map root, above-ground spawn, stronger gravity, and extra high ground drag so the player does not slide across the terrain.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component.
-- `map.js` builds the generated storm plain map, terrain colliders, rain, lightning, tall trees, and dense reactive grass.
+- `map.js` builds the generated storm plain map, smooth terrain visual mesh, tighter invisible terrain colliders, rain, lightning, sky trees, dense forest trees, and heavy reactive grass.
 - `main.js` updates the small browser note when entering or exiting VR.
 - `.nojekyll` keeps GitHub Pages from applying Jekyll processing.
 
@@ -27,14 +27,14 @@ The current map is a generated stormy grass plain built from lightweight A-Frame
 
 Map features:
 
-- Randomly generated rolling grassy terrain with hills instead of a flat floor.
+- Randomly generated rolling grassy terrain with hills instead of a flat floor, using a smooth grass mesh over smaller overlapping collider tiles so low dips still have hand-push collision.
 - Heavy rain that follows the player so the storm stays dense across the whole map.
 - Occasional lightning flashes with visible strikes and a dark gray storm sky.
-- Dense grass blades and clumps of varied height spread across the whole map, bending away from the player rig and tracked hands.
-- Tall climbable trees reach toward the sky with trunks, branches, and hand nubs.
-- Wet green paths and open grassy hills for Gorilla Tag-style movement.
-- No cloud geometry, brown mud patches, puddles, imported models, visible boundary walls, or leftover structure blocks.
-- Solid `locomotion-collider` boxes for terrain tiles, tree trunks, tree branches, boundaries, paths, and other major traversal surfaces.
+- Dense triangular grass blades of varied height spread across the whole map, bending away from the player rig and tracked hands.
+- A fuller forest of climbable trees, plus tall sky trees with trunks, branches, and hand nubs.
+- Open grassy hills and tree routes for Gorilla Tag-style movement.
+- No cloud geometry, brown mud patches, puddles, imported models, visible boundary walls, rectangular grass clump blocks, visible terrain tile blocks, or leftover structure blocks.
+- Solid `locomotion-collider` boxes for smaller terrain tiles, tree trunks, tree branches, boundaries, paths, and other major traversal surfaces.
 
 ## Hosting
 
