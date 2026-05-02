@@ -17,19 +17,20 @@ The scene keeps the simple A-Frame/WebXR structure from `simple-vr-scene`, inclu
 
 - `index.html` sets up the A-Frame scene, Quest tracked controllers, lighting, and the map root.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component.
-- `map.js` builds the water park resort map with lightweight A-Frame geometry.
+- `map.js` builds the rainforest map with lightweight A-Frame primitives.
 - `main.js` updates the small browser note when entering or exiting VR.
 - `.nojekyll` keeps GitHub Pages from applying Jekyll processing.
 
 ## Map Areas
 
-- Main hotel with lobby, front counter, rooms, hallways, balconies, ledges, and rooftop access.
-- Indoor bar/lounge, locker rooms, changing rooms, and fast connector corridors.
-- Outdoor pool deck with shallow, deep, and quiet pools plus a poolside bar.
-- Lazy river loop with pushable edges, bridge shortcut, and center island.
-- Slide tower with straight, tube, and spiral slide routes.
-- Rooftop parkour route with vents, beams, sky bridge, and shortcuts to the slide tower.
-- Hidden waterfall tunnel, service corridor, and secret maintenance room.
+- Dense rainforest floor with muddy loop paths, open clearings, tall grass, bushes, flowers, and climbable border cliffs.
+- Huge trees in different sizes with climbable trunks, buttress roots, hand knots, wraparound tree platforms, and canopy leaf clusters.
+- Canopy routes with rope bridges, narrow skilled beams, high platforms, vines, and parkour pads above the ground.
+- Cave routes on the west and east sides with climb shelves, tunnel exits, and hidden traversal options.
+- Water features built from simple primitives: small ponds, a stream crossing, stepping stones, and a waterfall basin.
+- Ground traversal loops with fallen logs, root climbs, a fast vine corridor, launch stumps, rocks, and boulders.
+- Secret paths include a waterfall tunnel, hollow tree room, root tunnel, cliff-top shortcut, and high canopy shortcut.
+- Built only from A-Frame primitives and simple colored materials; no GLB, glTF, external model, or asset map is used.
 
 ## Hosting
 
@@ -40,6 +41,6 @@ To test on Meta Quest:
 1. Host the files over HTTPS.
 2. Open the hosted URL in Meta Quest Browser.
 3. Press `Enter VR`.
-4. Push your tracked hands against the floor or blocks to move.
+4. Push your tracked hands against the floor, trees, rocks, platforms, bridges, logs, or tunnel walls to move.
 
 WebXR requires HTTPS on real devices, so use GitHub Pages or another HTTPS static host for Quest testing.
