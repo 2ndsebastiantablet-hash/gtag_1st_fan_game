@@ -38,6 +38,7 @@
       debugText: { type: "selector" },
       handRadius: { default: 0.12 },
       floorHeight: { default: 0 },
+      terrainContactOffset: { default: 0.08 },
       playerHeightOffset: { default: 0.62 },
       gravity: { default: GRAVITY },
       airDrag: { default: AIR_DRAG },
@@ -75,6 +76,10 @@
       this.leftResolved = new THREE.Vector3();
       this.rightResolved = new THREE.Vector3();
       this.pushHistory = [];
+      this.terrainPlayer = { height: this.data.floorHeight, hit: false };
+      this.terrainLeft = { height: this.data.floorHeight, hit: false };
+      this.terrainRight = { height: this.data.floorHeight, hit: false };
+      this.lastDebugLogTime = 0;
 
       this.leftTouchingFloor = false;
       this.rightTouchingFloor = false;
@@ -115,6 +120,7 @@
     resetTracking: function () {
       // Lower the XR reference space slightly so standing players can reach the
       // in-game floor comfortably without crouching to their real floor.
+      this.updateTerrainSamples();
       this.rig.position.y = this.getGroundedRigY();
       this.velocity.set(0, 0, 0);
       this.launchVelocity.set(0, 0, 0);
@@ -124,6 +130,7 @@
       this.pushHistory = [];
 
       this.readHandWorldPositions();
+      this.updateTerrainSamples();
       this.previousLeftWorld.copy(this.currentLeftWorld);
       this.previousRightWorld.copy(this.currentRightWorld);
       this.hasPreviousHands = true;
@@ -154,6 +161,7 @@
       }
 
       this.readHandWorldPositions();
+      this.updateTerrainSamples();
 
       if (!this.hasPreviousHands) {
         this.previousLeftWorld.copy(this.currentLeftWorld);
@@ -166,8 +174,8 @@
       this.leftDelta.subVectors(this.currentLeftWorld, this.previousLeftWorld);
       this.rightDelta.subVectors(this.currentRightWorld, this.previousRightWorld);
 
-      this.leftTouchingFloor = this.currentLeftWorld.y - this.data.handRadius <= this.data.floorHeight;
-      this.rightTouchingFloor = this.currentRightWorld.y - this.data.handRadius <= this.data.floorHeight;
+      this.leftTouchingFloor = this.currentLeftWorld.y - this.data.handRadius <= this.terrainLeft.height + this.data.terrainContactOffset;
+      this.rightTouchingFloor = this.currentRightWorld.y - this.data.handRadius <= this.terrainRight.height + this.data.terrainContactOffset;
 
       this.leftTouchingSurface = this.resolveHandCollision(this.currentLeftWorld, this.leftResolved);
       this.rightTouchingSurface = this.resolveHandCollision(this.currentRightWorld, this.rightResolved);
@@ -200,6 +208,12 @@
         this.rig.position.add(this.frameMovement);
         this.velocity.copy(this.frameMovement).divideScalar(deltaTime);
         this.recordPushVelocity(deltaTime);
+        this.updateTerrainSamples();
+
+        if (this.rig.position.y > this.getGroundedRigY() + 0.03) {
+          this.velocity.y = Math.min(this.velocity.y, 0) + this.data.gravity * deltaTime;
+          this.rig.position.y += this.velocity.y * deltaTime;
+        }
       } else {
         if (this.wasTouchingSurface && !touchingSurface) {
           this.applyLaunchVelocity();
@@ -212,8 +226,10 @@
         this.rig.position.addScaledVector(this.velocity, deltaTime);
       }
 
+      this.updateTerrainSamples();
       this.applyRigFloorClamp();
       this.resolveBodyCollision();
+      this.updateTerrainSamples();
       this.grounded = this.rig.position.y <= this.getGroundedRigY() + 0.01 && this.velocity.y <= 0.05;
 
       const activeDrag = this.grounded ? this.data.groundDrag : this.data.airDrag;
@@ -227,6 +243,7 @@
       // Re-read after moving the rig so next-frame deltas only represent the
       // player's real controller motion, not the rig translation we just applied.
       this.readHandWorldPositions();
+      this.updateTerrainSamples();
       this.previousLeftWorld.copy(this.currentLeftWorld);
       this.previousRightWorld.copy(this.currentRightWorld);
       this.wasTouchingSurface = touchingSurface;
@@ -262,8 +279,10 @@
       let touching = false;
       resolvedTarget.copy(worldPosition);
 
-      if (resolvedTarget.y - this.data.handRadius <= this.data.floorHeight) {
-        resolvedTarget.y = this.data.floorHeight + this.data.handRadius;
+      const terrainSample = this.getTerrainSampleAt(worldPosition.x, worldPosition.z);
+
+      if (resolvedTarget.y - this.data.handRadius <= terrainSample.height + this.data.terrainContactOffset) {
+        resolvedTarget.y = terrainSample.height + this.data.handRadius;
         touching = true;
       }
 
@@ -404,7 +423,27 @@
     },
 
     getGroundedRigY: function () {
-      return this.data.floorHeight - this.data.playerHeightOffset;
+      return this.terrainPlayer.height - this.data.playerHeightOffset;
+    },
+
+    updateTerrainSamples: function () {
+      this.terrainPlayer = this.getTerrainSampleAt(this.rig.position.x, this.rig.position.z);
+
+      if (this.currentLeftWorld) {
+        this.terrainLeft = this.getTerrainSampleAt(this.currentLeftWorld.x, this.currentLeftWorld.z);
+      }
+
+      if (this.currentRightWorld) {
+        this.terrainRight = this.getTerrainSampleAt(this.currentRightWorld.x, this.currentRightWorld.z);
+      }
+    },
+
+    getTerrainSampleAt: function (x, z) {
+      if (window.gtagTerrainSampleAt) {
+        return window.gtagTerrainSampleAt(x, z);
+      }
+
+      return { height: this.data.floorHeight, hit: false };
     },
 
     recordPushVelocity: function (deltaTime) {
@@ -468,24 +507,57 @@
     },
 
     updateDebugText: function () {
-      if (!this.data.debugText) {
-        return;
-      }
-
-      this.data.debugText.setAttribute("value", [
+      const lines = [
+        "Player x/z: " + this.rig.position.x.toFixed(2) + ", " + this.rig.position.z.toFixed(2),
+        "Terrain under player: " + this.terrainPlayer.height.toFixed(2),
         "Head y: " + this.currentHeadWorld.y.toFixed(2),
+        "Rig y: " + this.rig.position.y.toFixed(2),
         "L hand y: " + this.currentLeftWorld.y.toFixed(2),
+        "L terrain y: " + this.terrainLeft.height.toFixed(2),
         "R hand y: " + this.currentRightWorld.y.toFixed(2),
+        "R terrain y: " + this.terrainRight.height.toFixed(2),
         "L delta: " + this.formatVector(this.leftDelta),
         "R delta: " + this.formatVector(this.rightDelta),
-        "L touching floor: " + this.leftTouchingFloor,
-        "R touching floor: " + this.rightTouchingFloor,
+        "L touching terrain: " + this.leftTouchingFloor,
+        "R touching terrain: " + this.rightTouchingFloor,
+        "Terrain ray hit P/L/R: " + this.terrainPlayer.hit + "/" + this.terrainLeft.hit + "/" + this.terrainRight.hit,
         "Move applied: " + this.formatVector(this.frameMovement),
         "Launch velocity: " + this.formatVector(this.launchVelocity),
         "Grounded: " + this.grounded,
-        "Rig y: " + this.rig.position.y.toFixed(2),
         "Velocity: " + this.formatVector(this.velocity)
-      ].join("\n"));
+      ];
+
+      if (this.data.debugText) {
+        this.data.debugText.setAttribute("value", lines.join("\n"));
+      }
+
+      this.logTerrainDebug();
+    },
+
+    logTerrainDebug: function () {
+      const now = performance.now();
+
+      if (now - this.lastDebugLogTime < 1000) {
+        return;
+      }
+
+      this.lastDebugLogTime = now;
+      console.log("[terrain-debug]", {
+        playerXZ: [Number(this.rig.position.x.toFixed(2)), Number(this.rig.position.z.toFixed(2))],
+        playerTerrainHeight: Number(this.terrainPlayer.height.toFixed(3)),
+        rigY: Number(this.rig.position.y.toFixed(3)),
+        headY: Number(this.currentHeadWorld.y.toFixed(3)),
+        leftHandTerrainHeight: Number(this.terrainLeft.height.toFixed(3)),
+        rightHandTerrainHeight: Number(this.terrainRight.height.toFixed(3)),
+        leftHandTouchingTerrain: this.leftTouchingFloor,
+        rightHandTouchingTerrain: this.rightTouchingFloor,
+        grounded: this.grounded,
+        terrainRayHit: {
+          player: this.terrainPlayer.hit,
+          left: this.terrainLeft.hit,
+          right: this.terrainRight.hit
+        }
+      });
     },
 
     formatVector: function (vector) {

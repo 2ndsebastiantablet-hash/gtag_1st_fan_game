@@ -53,9 +53,17 @@
     <a-entity
       id="player-rig"
       position="0 1.2 18"
-      gorilla-locomotion="leftHand: #left-hand; rightHand: #right-hand; head: #player-camera; floorHeight: 0.05; playerHeightOffset: 0; groundDrag: 85; airDrag: 4.2; gravity: -28"
+      gorilla-locomotion="leftHand: #left-hand; rightHand: #right-hand; head: #player-camera; debugText: #terrain-debug-text; floorHeight: 0.05; playerHeightOffset: 0; groundDrag: 85; airDrag: 4.2; gravity: -28"
     >
       <a-camera id="player-camera" position="0 0 0" wasd-controls-enabled="false"></a-camera>
+      <a-text
+        id="terrain-debug-text"
+        value="Terrain debug starting..."
+        position="0 1.35 -2.2"
+        align="left"
+        width="2.2"
+        color="#DDE8EF"
+      ></a-text>
 
       <!-- Tracked Quest controllers with visible hand spheres for push locomotion. -->
       <a-entity id="left-hand" position="-0.35 -0.35 -0.4" tracked-controls="hand: left">

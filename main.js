@@ -12,7 +12,7 @@ window.addEventListener("DOMContentLoaded", function () {
   const defaultNote = note.textContent.trim();
 
   scene.addEventListener("enter-vr", function () {
-    note.textContent = "Push across the storm plain, climb the wet ridges, and watch the grass bend around your hands.";
+    note.textContent = "Push across the storm plain, climb the trees, and watch the terrain debug while testing hills and dips.";
   });
 
   scene.addEventListener("exit-vr", function () {

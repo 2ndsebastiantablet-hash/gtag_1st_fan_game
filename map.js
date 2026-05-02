@@ -65,17 +65,6 @@
       id: "storm-terrain-visual",
       "storm-terrain-visual": "size: " + MAP_SIZE + "; divisions: 64"
     });
-
-    for (let x = -HALF + TILE_SIZE / 2; x < HALF; x += TILE_SIZE) {
-      for (let z = -HALF + TILE_SIZE / 2; z < HALF; z += TILE_SIZE) {
-        const top = terrainTileHeight(x, z);
-        const bottom = -2.2;
-        const height = Math.max(0.35, top - bottom);
-        const color = top > 2.2 ? C.grassLight : top > 1.1 ? C.grass : C.wetGrass;
-
-        box(root, "rolling storm hill collider", [x, bottom + height / 2, z], [TILE_SIZE + 0.18, height, TILE_SIZE + 0.18], color, true, false);
-      }
-    }
   }
 
   function buildGrass(root) {
@@ -355,7 +344,12 @@
           metalness: 0
         });
 
-        this.el.object3D.add(new THREE.Mesh(geometry, material));
+        this.mesh = new THREE.Mesh(geometry, material);
+        this.mesh.name = "storm-terrain-collision-surface";
+        this.mesh.userData.isTerrainCollider = true;
+        this.mesh.frustumCulled = false;
+        this.el.object3D.add(this.mesh);
+        registerTerrainSurface(this.mesh);
       }
     });
 
@@ -482,17 +476,6 @@
     return h * (1 - spawnFlat);
   }
 
-  function terrainTileHeight(x, z) {
-    const r = TILE_SIZE * 0.48;
-    return Math.max(
-      terrainHeight(x, z),
-      terrainHeight(x - r, z - r),
-      terrainHeight(x + r, z - r),
-      terrainHeight(x - r, z + r),
-      terrainHeight(x + r, z + r)
-    );
-  }
-
   function hill(x, z, cx, cz, radius) {
     const distSq = Math.pow(x - cx, 2) + Math.pow(z - cz, 2);
     return Math.exp(-distSq / (radius * radius));
@@ -588,6 +571,40 @@
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
+  }
+
+  function registerTerrainSurface(mesh) {
+    const raycaster = new THREE.Raycaster();
+    const origin = new THREE.Vector3();
+    const direction = new THREE.Vector3(0, -1, 0);
+
+    window.gtagTerrainCollisionMeshes = [mesh];
+    window.gtagTerrainSampleAt = function (x, z) {
+      const meshes = window.gtagTerrainCollisionMeshes || [];
+
+      if (!meshes.length) {
+        return { height: 0, hit: false };
+      }
+
+      meshes.forEach(function (terrainMesh) {
+        terrainMesh.updateMatrixWorld(true);
+      });
+
+      origin.set(x, 80, z);
+      raycaster.set(origin, direction);
+      raycaster.far = 140;
+
+      const hits = raycaster.intersectObjects(meshes, false);
+
+      if (!hits.length) {
+        return { height: 0, hit: false };
+      }
+
+      return { height: hits[0].point.y, hit: true };
+    };
+    window.getTerrainHeightAt = function (x, z) {
+      return window.gtagTerrainSampleAt(x, z).height;
+    };
   }
 
   function refreshLocomotionColliders() {
