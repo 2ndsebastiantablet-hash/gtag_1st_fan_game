@@ -12,13 +12,16 @@ window.addEventListener("DOMContentLoaded", () => {
   const scene = document.querySelector("a-scene");
   const note = document.getElementById("note");
   const menuRoot = document.getElementById("vr-menu-root");
+  const menuEnvironment = document.getElementById("menu-environment");
+  const mapRoot = document.getElementById("storm-plain-map");
   const remoteRoot = document.getElementById("remote-players");
   const rig = document.getElementById("player-rig");
   const camera = document.getElementById("player-camera");
   const leftHand = document.getElementById("left-hand");
   const rightHand = document.getElementById("right-hand");
+  const sky = document.querySelector("a-sky");
 
-  if (!scene || !note || !menuRoot || !remoteRoot || !rig || !camera || !leftHand || !rightHand) {
+  if (!scene || !note || !menuRoot || !menuEnvironment || !mapRoot || !remoteRoot || !rig || !camera || !leftHand || !rightHand) {
     return;
   }
 
@@ -60,7 +63,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   scene.addEventListener("enter-vr", () => {
-    note.textContent = "Use the VR menu, then push with your hands through the faster storm plain.";
+    note.textContent = "Use the VR menu to join a public storm or enter a private code.";
   });
 
   scene.addEventListener("exit-vr", () => {
@@ -77,6 +80,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 90);
 
   renderMenu();
+  showMenuSpace();
 
   function resolveApiBase() {
     if (window.QUIET_MULTIPLAYER_API) {
@@ -101,51 +105,32 @@ window.addEventListener("DOMContentLoaded", () => {
     menuRoot.setAttribute("visible", state.playing ? "false" : "true");
     if (state.playing) return;
 
-    panel(menuRoot, 3.7, 2.7, "#10191D", 0.92);
-    text(menuRoot, GAME_NAME, [0, 0.98, 0.04], 5.6, "#F4F8F2");
+    panel(menuRoot, 5.25, state.screen === "multiplayer" ? 4.9 : 2.8, "#FFFFFF", 0.96);
+    text(menuRoot, GAME_NAME, [0, state.screen === "multiplayer" ? 2.02 : 0.98, 0.04], 6.2, "#111317");
 
     if (state.screen === "home") {
-      text(menuRoot, "storm grass vr", [0, 0.56, 0.04], 1.4, "#AFC9B8");
+      text(menuRoot, "storm grass vr", [0, 0.56, 0.04], 1.5, "#5D6670");
       button(menuRoot, "PLAY", [0, -0.08, 0.08], [1.72, 0.42, 0.08], () => {
-        state.screen = "mode";
-        state.status = "Pick solo or private multiplayer.";
-        renderMenu();
-      });
-      text(menuRoot, state.status, [0, -0.62, 0.04], 1.3, "#DDE8EF");
-      return;
-    }
-
-    if (state.screen === "mode") {
-      text(menuRoot, "mode", [0, 0.58, 0.04], 1.5, "#DDE8EF");
-      button(menuRoot, "SINGLE PLAYER", [0, 0.12, 0.08], [2.28, 0.34, 0.08], () => {
-        state.playing = true;
-        state.status = "Single player.";
-        note.textContent = "Single player: fast hand launches, lighter gravity, and denser storm grass.";
-        renderMenu();
-      });
-      button(menuRoot, "MULTIPLAYER", [0, -0.34, 0.08], [2.28, 0.34, 0.08], () => {
         state.screen = "multiplayer";
-        state.status = "Create a private code or enter one to join.";
+        state.status = "Join public, create a code, or enter a private code.";
         renderMenu();
       });
-      smallButton(menuRoot, "BACK", [-1.26, -0.96, 0.08], () => {
-        state.screen = "home";
-        renderMenu();
-      });
+      text(menuRoot, state.status, [0, -0.62, 0.04], 1.35, "#3D454D");
       return;
     }
 
     if (state.screen === "multiplayer") {
-      text(menuRoot, "private multiplayer", [0, 0.78, 0.04], 1.6, "#DDE8EF");
-      button(menuRoot, "CREATE PRIVATE", [0, 0.38, 0.08], [2.38, 0.3, 0.08], createPrivateLobby);
-      button(menuRoot, "JOIN CODE", [0, 0.0, 0.08], [2.38, 0.3, 0.08], joinPrivateLobby);
-      text(menuRoot, "CODE: " + (state.code || "______"), [0, -0.34, 0.05], 1.45, "#F4F8F2");
+      text(menuRoot, "multiplayer", [0, 1.58, 0.04], 1.8, "#3D454D");
+      button(menuRoot, "JOIN PUBLIC", [-1.22, 1.14, 0.08], [2.05, 0.34, 0.08], joinPublicLobby);
+      button(menuRoot, "CREATE CODE", [1.22, 1.14, 0.08], [2.05, 0.34, 0.08], createPrivateLobby);
+      button(menuRoot, "JOIN CODE", [0, 0.72, 0.08], [2.3, 0.34, 0.08], joinPrivateLobby);
+      text(menuRoot, "CODE: " + (state.code || "______"), [0, 0.32, 0.05], 1.8, "#111317");
       buildCodePad(menuRoot);
-      smallButton(menuRoot, "BACK", [-1.32, -1.12, 0.08], () => {
-        state.screen = "mode";
+      smallButton(menuRoot, "BACK", [-1.9, -2.18, 0.08], () => {
+        state.screen = "home";
         renderMenu();
       });
-      text(menuRoot, state.status, [0, -1.08, 0.05], 1.1, "#AFC9B8");
+      text(menuRoot, state.status, [0.35, -2.18, 0.05], 1.55, "#3D454D");
       return;
     }
 
@@ -153,16 +138,14 @@ window.addEventListener("DOMContentLoaded", () => {
       const snapshot = state.snapshot;
       const code = snapshot?.code || "------";
       const count = snapshot ? snapshot.playerCount + " / " + snapshot.maxPlayers : "connecting";
-      text(menuRoot, "private code", [0, 0.68, 0.04], 1.4, "#AFC9B8");
-      text(menuRoot, code, [0, 0.24, 0.05], 2.8, "#F4F8F2");
-      text(menuRoot, "players: " + count, [0, -0.18, 0.04], 1.2, "#DDE8EF");
+      text(menuRoot, "private code", [0, 0.68, 0.04], 1.4, "#5D6670");
+      text(menuRoot, code, [0, 0.24, 0.05], 2.8, "#111317");
+      text(menuRoot, "players: " + count, [0, -0.18, 0.04], 1.2, "#3D454D");
       button(menuRoot, "START", [0, -0.58, 0.08], [1.64, 0.34, 0.08], () => {
-        state.playing = true;
-        note.textContent = "Multiplayer active. Private code " + code + ".";
-        renderMenu();
+        startGame("Multiplayer active. Private code " + code + ".");
       });
       smallButton(menuRoot, "LEAVE", [-1.22, -1.05, 0.08], leaveLobby);
-      text(menuRoot, state.status, [0, -1.02, 0.05], 1.05, "#AFC9B8");
+      text(menuRoot, state.status, [0, -1.02, 0.05], 1.05, "#3D454D");
     }
   }
 
@@ -184,13 +167,13 @@ window.addEventListener("DOMContentLoaded", () => {
       height: size[1],
       depth: size[2],
       position: vec(position),
-      color: "#234A42",
+      color: "#2F5F55",
       material: "shader: flat; roughness: 1"
     });
-    el.addEventListener("mouseenter", () => el.setAttribute("color", "#347464"));
-    el.addEventListener("mouseleave", () => el.setAttribute("color", "#234A42"));
+    el.addEventListener("mouseenter", () => el.setAttribute("color", "#3E7E70"));
+    el.addEventListener("mouseleave", () => el.setAttribute("color", "#2F5F55"));
     el.addEventListener("click", onClick);
-    text(el, label, [0, 0, size[2] / 2 + 0.012], Math.min(1.45, size[0] * 0.78), "#F4F8F2");
+    text(el, label, [0, 0, size[2] / 2 + 0.012], label.length === 1 ? 1.45 : Math.min(1.7, size[0] * 0.86), "#F4F8F2");
     return el;
   }
 
@@ -202,9 +185,9 @@ window.addEventListener("DOMContentLoaded", () => {
     const keys = ["ABCDEFGH", "IJKLMNOP", "QRSTUVWX", "YZ012345", "6789"];
     keys.forEach((row, rowIndex) => {
       const chars = row.split("");
-      const startX = -(chars.length - 1) * 0.17;
+      const startX = -(chars.length - 1) * 0.235;
       chars.forEach((char, colIndex) => {
-        button(parent, char, [startX + colIndex * 0.34, -0.58 - rowIndex * 0.22, 0.08], [0.25, 0.16, 0.06], () => {
+        button(parent, char, [startX + colIndex * 0.47, -0.12 - rowIndex * 0.36, 0.08], [0.36, 0.26, 0.06], () => {
           if (state.code.length < 6) {
             state.code += char;
             renderMenu();
@@ -212,14 +195,45 @@ window.addEventListener("DOMContentLoaded", () => {
         });
       });
     });
-    button(parent, "DEL", [0.72, -1.46, 0.08], [0.55, 0.18, 0.06], () => {
+    button(parent, "DEL", [0.82, -1.92, 0.08], [0.68, 0.26, 0.06], () => {
       state.code = state.code.slice(0, -1);
       renderMenu();
     });
-    button(parent, "CLR", [1.34, -1.46, 0.08], [0.55, 0.18, 0.06], () => {
+    button(parent, "CLR", [1.62, -1.92, 0.08], [0.68, 0.26, 0.06], () => {
       state.code = "";
       renderMenu();
     });
+  }
+
+  async function joinPublicLobby() {
+    try {
+      state.status = "Finding public lobby...";
+      renderMenu();
+      const publicLobbies = await multiplayer.listPublicLobbies();
+      const openLobby = publicLobbies.find((lobby) => lobby.playerCount < lobby.maxPlayers);
+      const snapshot = openLobby
+        ? await multiplayer.joinLobbyById({
+            lobbyId: openLobby.lobbyId,
+            playerName,
+            playerState: getLocalPlayerState(),
+            playerMeta: PLAYER_COLORS
+          })
+        : await multiplayer.createLobby({
+            lobbyName: GAME_NAME + " public",
+            privateLobby: false,
+            maxPlayers: 12,
+            playerName,
+            playerState: getLocalPlayerState(),
+            playerMeta: PLAYER_COLORS
+          });
+
+      state.joined = true;
+      state.snapshot = snapshot;
+      startGame("Joined public multiplayer.");
+    } catch (error) {
+      state.status = error.message || "Could not join public lobby.";
+      renderMenu();
+    }
   }
 
   async function createPrivateLobby() {
@@ -263,9 +277,8 @@ window.addEventListener("DOMContentLoaded", () => {
       });
       state.joined = true;
       state.snapshot = snapshot;
-      state.screen = "lobby";
       updateLobbyStatus(snapshot);
-      renderMenu();
+      startGame("Joined private multiplayer.");
     } catch (error) {
       state.status = error.message || "Could not join lobby.";
       renderMenu();
@@ -282,8 +295,47 @@ window.addEventListener("DOMContentLoaded", () => {
     state.status = "Left multiplayer.";
     clear(remoteRoot);
     remotePlayers.clear();
+    showMenuSpace();
     state.screen = "multiplayer";
     renderMenu();
+  }
+
+  function startGame(message) {
+    state.playing = true;
+    state.status = "Playing.";
+    menuRoot.setAttribute("visible", "false");
+    menuEnvironment.setAttribute("visible", "false");
+    mapRoot.setAttribute("visible", "true");
+    scene.setAttribute("background", "color: #171A20");
+    if (sky) {
+      sky.setAttribute("color", "#171A20");
+    }
+    resetRigToGameSpawn();
+    note.textContent = message || "In game.";
+    renderMenu();
+  }
+
+  function showMenuSpace() {
+    state.playing = false;
+    menuRoot.setAttribute("visible", "true");
+    menuEnvironment.setAttribute("visible", "true");
+    mapRoot.setAttribute("visible", "false");
+    scene.setAttribute("background", "color: #FFFFFF");
+    if (sky) {
+      sky.setAttribute("color", "#FFFFFF");
+    }
+  }
+
+  function resetRigToGameSpawn() {
+    const x = 0;
+    const z = 18;
+    const terrainY = window.getTerrainHeightAt ? window.getTerrainHeightAt(x, z) : 0;
+    rig.object3D.position.set(x, terrainY + 0.35, z);
+    const locomotion = rig.components && rig.components["gorilla-locomotion"];
+    if (locomotion) {
+      locomotion.velocity.set(0, 0, 0);
+      locomotion.resetTracking();
+    }
   }
 
   function updateLobbyStatus(snapshot) {

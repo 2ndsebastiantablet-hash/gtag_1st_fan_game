@@ -36,7 +36,7 @@
 </head>
 <body>
   <div id="note">
-    Open this page in Meta Quest Browser, press Enter VR, and use the quiet VR menu to play solo or join a private multiplayer storm.
+    Open this page in Meta Quest Browser, press Enter VR, and use the quiet VR menu to join a private code or public storm.
   </div>
 
   <a-scene
@@ -53,7 +53,7 @@
     <a-entity
       id="player-rig"
       position="0 0.4 18"
-      gorilla-locomotion="leftHand: #left-hand; rightHand: #right-hand; head: #player-camera; debugText: #terrain-debug-text; floorHeight: 0.05; playerHeightOffset: 0.72; spawnHeightOffset: 0.28; groundDrag: 58; airDrag: 2.8; gravity: -18; handPushMultiplier: 2.35; maxMovePerFrame: 0.62; maxVelocity: 15; maxLaunchSpeed: 15; oneHandLaunchMultiplier: 1.85; twoHandLaunchMultiplier: 2.35"
+      gorilla-locomotion="leftHand: #left-hand; rightHand: #right-hand; head: #player-camera; floorHeight: 0.05; playerHeightOffset: 0.72; spawnHeightOffset: 0.28; groundDrag: 58; airDrag: 2.8; gravity: -18; handPushMultiplier: 2.35; maxMovePerFrame: 0.62; maxVelocity: 15; maxLaunchSpeed: 15; oneHandLaunchMultiplier: 1.85; twoHandLaunchMultiplier: 2.35"
     >
       <a-camera id="player-camera" position="0 0 0" wasd-controls-enabled="false">
         <a-cursor
@@ -64,15 +64,6 @@
           geometry="primitive: ring; radiusInner: 0.012; radiusOuter: 0.02"
         ></a-cursor>
       </a-camera>
-      <a-text
-        id="terrain-debug-text"
-        value="Terrain debug starting..."
-        position="0 1.35 -2.2"
-        align="left"
-        width="2.2"
-        color="#DDE8EF"
-      ></a-text>
-
       <!-- Tracked Quest controllers with visible hand spheres for push locomotion. -->
       <a-entity id="left-hand" position="-0.35 -0.35 -0.4" tracked-controls="hand: left" raycaster="objects: .vr-clickable; far: 8" line="color: #DDE8EF; opacity: 0.35">
         <a-sphere id="left-hand-visual" radius="0.12" color="#FF7AA2" opacity="0.95"></a-sphere>
@@ -83,8 +74,22 @@
       </a-entity>
     </a-entity>
 
-    <a-entity id="storm-plain-map"></a-entity>
-    <a-entity id="vr-menu-root" position="0 1.6 14.2"></a-entity>
+    <a-entity id="menu-environment">
+      <a-plane
+        position="0 -0.02 18"
+        rotation="-90 0 0"
+        width="12"
+        height="12"
+        color="#9EA1A6"
+        roughness="1"
+      ></a-plane>
+      <a-plane position="0 3 12" width="12" height="6" color="#FFFFFF" roughness="1"></a-plane>
+      <a-plane position="-6 3 18" rotation="0 90 0" width="12" height="6" color="#FFFFFF" roughness="1"></a-plane>
+      <a-plane position="6 3 18" rotation="0 -90 0" width="12" height="6" color="#FFFFFF" roughness="1"></a-plane>
+    </a-entity>
+
+    <a-entity id="storm-plain-map" visible="false"></a-entity>
+    <a-entity id="vr-menu-root" position="0 2.05 14.2"></a-entity>
     <a-entity id="remote-players"></a-entity>
   </a-scene>
 </body>

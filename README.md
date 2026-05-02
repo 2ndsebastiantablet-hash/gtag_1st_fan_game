@@ -19,10 +19,10 @@ The multiplayer backend and browser client are adapted from the pinned `multipla
 
 ## Files
 
-- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the VR menu root, multiplayer remotes root, terrain-relative spawn, faster movement tuning, lighter gravity, and a temporary terrain debug readout.
+- `index.html` sets up the A-Frame scene, Quest tracked controllers, storm lighting, the white/gray VR menu room, multiplayer remotes root, terrain-relative spawn, faster movement tuning, and lighter gravity.
 - `gorilla-locomotion.js` contains the reusable Gorilla Tag-style locomotion component with terrain-height support for the rig and hands.
 - `map.js` builds the generated storm plain map, smooth terrain visual mesh, raycast terrain collision surface, rain, lightning, sky trees, denser forest trees, and heavier reactive grass.
-- `main.js` builds the VR-first `quiet` menu, starts single player, creates and joins private multiplayer codes, sends local VR state, and renders remote players.
+- `main.js` builds the VR-first `quiet` menu, joins public multiplayer, creates and joins private multiplayer codes, transitions players out of the menu room into the storm map, sends local VR state, and renders remote players.
 - `frontend/multiplayer-client.js` is the template browser client used by the VR menu.
 - `backend/` contains the template Cloudflare Worker, lobby directory, Durable Object room, and server authority adapted for VR rig/head/hand state.
 - `.nojekyll` keeps GitHub Pages from applying Jekyll processing.
@@ -42,7 +42,7 @@ Map features:
 - No cloud geometry, brown mud patches, puddles, imported models, visible boundary walls, rectangular grass clump blocks, visible terrain tile blocks, or leftover structure blocks.
 - Terrain height is sampled with downward raycasts against the actual ground mesh, while solid `locomotion-collider` boxes remain for tree trunks, tree branches, boundaries, and other non-terrain traversal surfaces.
 - Spawn waits until terrain height is available, then places the rig at terrain height minus the standing hand-reach offset plus a small `0.28` meter drop height so gravity settles the player naturally.
-- Temporary terrain debug shows player x/z, terrain height under the player, rig/head y, hand terrain heights, hand touch state, grounded state, and terrain ray hit state.
+- Player-screen terrain debug statistics are hidden during normal play.
 
 ## Hosting
 
@@ -53,7 +53,7 @@ To test on Meta Quest:
 1. Host the files over HTTPS, or deploy with `npm run deploy` for the Worker/API plus static assets.
 2. Open the hosted URL in Meta Quest Browser.
 3. Press `Enter VR`.
-4. Use the `quiet` VR menu to choose single player or create/join a private multiplayer code.
+4. Use the `quiet` VR menu to join public multiplayer, create a private code, or join a private code.
 5. Push your tracked hands against the ground, hills, tree trunks, branches, and climb nubs to move.
 
 WebXR requires HTTPS on real devices, so use GitHub Pages or another HTTPS static host for Quest testing.
